@@ -115,6 +115,71 @@ Logs in an existing user.
     "message": "Invalid email or password"
   }
   ```
+  ...
+
+### 3. Get User Profile
+
+**GET** `/users/profile`
+
+Returns the authenticated user's profile.  
+Requires a valid JWT token in the `Authorization` header or as a cookie.
+
+#### Headers
+
+```
+Authorization: Bearer <jwt_token>
+```
+
+#### Response
+
+- **200 OK**
+  ```json
+  {
+    "_id": "user_id",
+    "fullname": {
+      "firstname": "Deep",
+      "lastname": "Shrestha"
+    },
+    "email": "deep.shrestha@example.com",
+    "socketId": null
+  }
+  ```
+- **401 Unauthorized**
+  ```json
+  {
+    "message": "Unauthorized"
+  }
+  ```
+
+---
+
+### 4. Logout User
+
+**GET** `/users/logout`
+
+Logs out the authenticated user.  
+Requires a valid JWT token in the `Authorization` header or as a cookie.
+
+#### Headers
+
+```
+Authorization: Bearer <jwt_token>
+```
+
+#### Response
+
+- **200 OK**
+  ```json
+  {
+    "message": "Logged out successfully"
+  }
+  ```
+- **401 Unauthorized**
+  ```json
+  {
+    "message": "Unauthorized"
+  }
+  ```
 
 ---
 
