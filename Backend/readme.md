@@ -183,6 +183,92 @@ Authorization: Bearer <jwt_token>
 
 ---
 
+...
+
+### 5. Register Captain
+
+**POST** `/captains/register`
+
+Registers a new captain (driver) with vehicle details.
+
+#### Request Body
+
+```json
+{
+  "fullname": {
+    "firstname": "Deep",
+    "lastname": "Shrestha"
+  },
+  "email": "deep.shrestha@example.com",
+  "password": "yourpassword",
+  "vehicle": {
+    "color": "Red",
+    "plate": "ABC123",
+    "capacity": 4,
+    "vehicleType": "car"
+  }
+}
+```
+
+#### Validation
+
+- `fullname.firstname`: required, minimum 3 characters
+- `fullname.lastname`: optional, minimum 3 characters if provided
+- `email`: required, must be a valid email
+- `password`: required, minimum 6 characters
+- `vehicle.color`: required, minimum 3 characters
+- `vehicle.plate`: required, minimum 3 characters
+- `vehicle.capacity`: required, integer, minimum 1
+- `vehicle.vehicleType`: required, must be one of `"car"`, `"motorcycle"`, `"auto"`
+
+#### Responses
+
+- **201 Created**
+  ```json
+  {
+    "token": "<jwt_token>",
+    "captain": {
+      "_id": "captain_id",
+      "fullname": {
+        "firstname": "Deep",
+        "lastname": "Shrestha"
+      },
+      "email": "deep.shrestha@example.com",
+      "status": "inactive",
+      "vehicle": {
+        "color": "Red",
+        "plate": "ABC123",
+        "capacity": 4,
+        "vehicleType": "car"
+      },
+      "location": {
+        "lat": null,
+        "lon": null
+      }
+    }
+  }
+  ```
+- **400/401 Bad Request**
+  ```json
+  {
+    "errors": [
+      {
+        "msg": "first name must have atleast 3 characters",
+        "param": "fullname.firstname",
+        "location": "body"
+      }
+    ]
+  }
+  ```
+  or
+  ```json
+  {
+    "message": "Caption already exists!"
+  }
+  ```
+
+---
+
 ## Notes
 
 - All endpoints accept and return JSON.
