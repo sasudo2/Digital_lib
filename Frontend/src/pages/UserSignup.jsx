@@ -1,26 +1,43 @@
-import { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { UserDataContext } from "../context/UserContext";
+
 function UserSignup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
   const [userDate, setUserDate] = useState({});
-  const submitHandler = (e) => {
+
+  const navigate = useNavigate();
+  const { user, setUser } = useContext(UserDataContext);
+
+  const submitHandler = async (e) => {
     e.preventDefault();
-    setFirstname("");
-    setLastname("");
-    setEmail("");
-    setPassword("");
-    setUserDate({
+    const newUser = {
       fullname: {
         firstname: firstname,
         lastname: lastname,
       },
       email: email,
       password: password,
-    });
-    console.log(userDate);
+    };
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/users/register`,
+      newUser
+    );
+    if (response.status === 201) {
+      const data = response.data;
+      setUser(data.user);
+      localStorage.setItem("token", data.token);
+      setFirstname("");
+      setLastname("");
+      setEmail("");
+      setPassword("");
+      navigate("/login");
+    }
   };
   return (
     <div className="p-7 h-screen flex flex-col justify-between">
@@ -77,7 +94,7 @@ function UserSignup() {
             placeholder="password"
           />
           <button className="flex items-center justify-center w-full bg-black text-white py-3 rounded mt-5">
-            Login
+            Create account
           </button>
         </form>
         <p className="text-center">

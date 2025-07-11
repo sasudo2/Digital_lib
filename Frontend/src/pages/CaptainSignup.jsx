@@ -1,5 +1,8 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { CaptainDataContext } from "../context/CaptainContext";
 
 function CaptainSignup() {
   const [email, setEmail] = useState("");
@@ -7,21 +10,50 @@ function CaptainSignup() {
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
   const [userDate, setUserDate] = useState({});
-  const submitHandler = (e) => {
+  const [vehicleColor, setVehicleColor] = useState("");
+  const [vehiclePlate, setVehiclePlate] = useState("");
+  const [vehicleCapacity, setVehicleCapacity] = useState("");
+  const [vehicleType, setVehicleType] = useState("");
+  const { captain, setCaptain } = useContext(CaptainDataContext);
+
+  const navigate = useNavigate();
+
+  const submitHandler = async (e) => {
     e.preventDefault();
-    setFirstname("");
-    setLastname("");
-    setEmail("");
-    setPassword("");
-    setUserDate({
+    const captainData = {
       fullname: {
         firstname: firstname,
         lastname: lastname,
       },
       email: email,
       password: password,
-    });
-    console.log(userDate);
+      vehicle: {
+        color: vehicleColor,
+        plate: vehiclePlate,
+        capacity: Number(vehicleCapacity),
+        vehicleType: vehicleType, // should be one of: "car", "motorcycle", "auto"
+      },
+    };
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/captains/register`,
+      captainData
+    );
+
+    if (response.status === 201) {
+      const data = response.data;
+      localStorage.setItem("token", data.token);
+      setCaptain(data.captain);
+      navigate("/captain-login");
+    }
+
+    setFirstname("");
+    setLastname("");
+    setEmail("");
+    setPassword("");
+    setVehicleColor("");
+    setVehiclePlate("");
+    setVehicleCapacity("");
+    setVehicleType("");
   };
   return (
     <div className="py-5 px-5 h-screen flex flex-col justify-between">
@@ -77,8 +109,45 @@ function CaptainSignup() {
             type="password"
             placeholder="password"
           />
+          <h3 className="text-base font-medium mb-2">Vehicle Information</h3>
+          <input
+            type="text"
+            required
+            placeholder="Vehicle color"
+            className="bg-[#eeeeee] mb-3 rounded px-4 py-2 border w-full text-base placeholder:text-sm"
+            value={vehicleColor}
+            onChange={(e) => setVehicleColor(e.target.value)}
+          />
+          <input
+            type="text"
+            required
+            placeholder="Vehicle plate"
+            className="bg-[#eeeeee] mb-3 rounded px-4 py-2 border w-full text-base placeholder:text-sm"
+            value={vehiclePlate}
+            onChange={(e) => setVehiclePlate(e.target.value)}
+          />
+          <input
+            type="number"
+            required
+            min={1}
+            placeholder="Vehicle capacity"
+            className="bg-[#eeeeee] mb-3 rounded px-4 py-2 border w-full text-base placeholder:text-sm"
+            value={vehicleCapacity}
+            onChange={(e) => setVehicleCapacity(e.target.value)}
+          />
+          <select
+            required
+            className="bg-[#eeeeee] mb-5 rounded px-4 py-2 border w-full text-base"
+            value={vehicleType}
+            onChange={(e) => setVehicleType(e.target.value)}
+          >
+            <option value="">Select vehicle type</option>
+            <option value="car">Car</option>
+            <option value="motorcycle">Motorcycle</option>
+            <option value="auto">Auto</option>
+          </select>
           <button className="flex items-center justify-center w-full bg-black text-white py-3 rounded mt-5">
-            Login
+            Create Captain Account
           </button>
         </form>
         <p className="text-center">
