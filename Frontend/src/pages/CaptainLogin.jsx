@@ -4,7 +4,7 @@ import { useState, useContext } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { CaptainDataContext } from "../context/CaptainContext";
-
+import main_logo from "../assets/main_logo.png";
 function CaptainLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,7 +35,7 @@ function CaptainLogin() {
       <div>
         <img
           className="w-16 mb-10"
-          src="https://toppng.com/uploads/preview/uber-logo-png-transparent-background-11661767218bpqhia5qmj.png"
+          src={main_logo}
           alt=""
         />
         <form
