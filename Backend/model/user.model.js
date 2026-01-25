@@ -1,49 +1,49 @@
-const mongoose = require("mongoose");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
+const { pool } = require('../db/db');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
-const userSchema = new mongoose.Schema({
-  fullname: {
-    firstname: {
-      type: String,
-      required: true,
-      minlength: [3, "first name should have more that 3 characters."],
-    },
-    lastname: {
-      type: String,
-      minlength: [3, "firstname should have more than 3 characters"],
-    },
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    minlength: [5, "email must have atleast 5 characters."],
-  },
-  password: {
-    type: String,
-    required: true,
-    select: false,
-  },
-  socketId: {
-    type: String,
-  },
-});
-userSchema.methods.generateAuthToken = function () {
-  const token = jwt.sign({ _id: this.id }, process.env.JWT_SECRET, {
-    expiresIn: "24h",
-  });
-  return token;
-};
+class User {
+  static async create({ firstname, lastname, email, password }) {
+    const query = `
+      INSERT INTO users (firstname, lastname, email, password)
+      VALUES ($1, $2, $3, $4)
+      RETURNING id, firstname, lastname, email, socket_id, created_at, updated_at
+    `;
+    const values = [firstname, lastname, email, password];
+    const result = await pool.query(query, values);
+    return result.rows[0];
+  }
 
-userSchema.methods.comparePassword = async function (password) {
-  return await bcrypt.compare(password, this.password);
-};
+  static async findByEmail(email) {
+    const query = 'SELECT * FROM users WHERE email = $1';
+    const result = await pool.query(query, [email]);
+    return result.rows[0];
+  }
 
-userSchema.statics.hashPassword = async function (password) {
-  return await bcrypt.hash(password, 10);
-};
+  static async findById(id) {
+    const query = 'SELECT * FROM users WHERE id = $1';
+    const result = await pool.query(query, [id]);
+    return result.rows[0];
+  }
 
-const userModel = mongoose.model("User", userSchema);
+  static async updateSocketId(id, socketId) {
+    const query = 'UPDATE users SET socket_id = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2';
+    await pool.query(query, [socketId, id]);
+  }
 
-module.exports = userModel;
+  static generateAuthToken(userId) {
+    return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+      expiresIn: '24h',
+    });
+  }
+
+  static async comparePassword(password, hashedPassword) {
+    return await bcrypt.compare(password, hashedPassword);
+  }
+
+  static async hashPassword(password) {
+    return await bcrypt.hash(password, 10);
+  }
+}
+
+module.exports = User;

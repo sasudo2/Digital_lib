@@ -49,7 +49,7 @@ router.get(
 router.get(
   "/logout",
   authMiddleware.authCaptain,
-  captainController.captainLogout
+  captainController.logoutCaptain
 );
 
 module.exports = router;
