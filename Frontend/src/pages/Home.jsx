@@ -1,15 +1,105 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import mainLogo from "../assets/main_logo.png";
 import { UserDataContext } from "../context/UserContext";
+import Avatar from "react-avatar";
 
 function Home() {
+  const navigate = useNavigate();
   const { user, setUser } = useContext(UserDataContext);
   const [showProfile, setShowProfile] = useState(false);
+  const [popularBooks, setPopularBooks] = useState([]);
+  const [favoriteBooks, setFavoriteBooks] = useState([]);
+  const [borrowingHistory, setBorrowingHistory] = useState([]);
+  const [loadingPopular, setLoadingPopular] = useState(true);
+  const [loadingFavorites, setLoadingFavorites] = useState(true);
+  const [loadingBorrowing, setLoadingBorrowing] = useState(true);
+
+  console.log("User data in Home:", user);
+
+  // Refresh user data from localStorage on mount
+  useEffect(() => {
+    const storedUser = localStorage.getItem("pathsala_user");
+    if (storedUser) {
+      try {
+        const userData = JSON.parse(storedUser);
+        console.log("Loaded user from localStorage:", userData);
+        setUser(userData);
+      } catch (e) {
+        console.error("Error parsing stored user:", e);
+      }
+    }
+    
+    // Fetch popular books
+    fetchPopularBooks();
+    // Fetch favorite books
+    fetchFavoriteBooks();
+    // Fetch borrowing history
+    fetchBorrowingHistory();
+  }, []);
 
   const formatTime = (minutes = 0) => {
     const hrs = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return `${hrs}h ${mins}m`;
+  };
+
+  const fetchPopularBooks = async () => {
+    try {
+      setLoadingPopular(true);
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/books/popular`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('userToken')}`,
+          },
+        }
+      );
+      setPopularBooks(response.data.books || []);
+    } catch (error) {
+      console.error('Error fetching popular books:', error);
+    } finally {
+      setLoadingPopular(false);
+    }
+  };
+
+  const fetchFavoriteBooks = async () => {
+    try {
+      setLoadingFavorites(true);
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/favorites/list`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('userToken')}`,
+          },
+        }
+      );
+      setFavoriteBooks(response.data.favorites || []);
+    } catch (error) {
+      console.error('Error fetching favorite books:', error);
+    } finally {
+      setLoadingFavorites(false);
+    }
+  };
+
+  const fetchBorrowingHistory = async () => {
+    try {
+      setLoadingBorrowing(true);
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/borrowing/history`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('userToken')}`,
+          },
+        }
+      );
+      setBorrowingHistory(response.data.history || []);
+    } catch (error) {
+      console.error('Error fetching borrowing history:', error);
+    } finally {
+      setLoadingBorrowing(false);
+    }
   };
 
   const handlePhotoUpload = (e) => {
@@ -32,10 +122,16 @@ function Home() {
             <h1 className="text-3xl font-bold text-white">Pathsala</h1>
           </div>
           <nav className="flex gap-4 items-center">
-            <button className="text-white hover:text-yellow-300 font-medium transition">
+            <button 
+              onClick={() => navigate("/browse")}
+              className="text-white hover:text-yellow-300 font-medium transition"
+            >
               Browse Books
             </button>
-            <button className="text-white hover:text-yellow-300 font-medium transition">
+            <button 
+              onClick={() => navigate("/my-library")}
+              className="text-white hover:text-yellow-300 font-medium transition"
+            >
               My Library
             </button>
 
@@ -47,9 +143,15 @@ function Home() {
               {user && user.profilePic ? (
                 <img src={user.profilePic} alt="avatar" className="h-8 w-8 rounded-full object-cover" />
               ) : (
-                <div className="h-8 w-8 rounded-full bg-yellow-300 flex items-center justify-center text-sm font-semibold text-gray-800">
-                  {user && user.fullname && (user.fullname.firstname ? user.fullname.firstname[0] : "U")}
-                </div>
+                <Avatar 
+                  name={
+                    user && user.fullname && (user.fullname.firstname || user.fullname.lastname)
+                      ? `${user.fullname.firstname || ''} ${user.fullname.lastname || ''}`.trim()
+                      : "User"
+                  } 
+                  size="32" 
+                  round 
+                />
               )}
               <span className="text-white hidden sm:inline">Profile</span>
             </button>
@@ -117,27 +219,144 @@ function Home() {
         </div>
 
         {/* Popular Books Section */}
-        <div>
+        <div className="mb-16">
           <h3 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-6">
             Popular Books
           </h3>
-          <div className="grid md:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map((item) => (
-              <div
-                key={item}
-                className="bg-white rounded-lg shadow-md hover:shadow-xl transition overflow-hidden cursor-pointer"
-              >
-                <div className="h-64 bg-gradient-to-br from-yellow-400 via-orange-400 to-red-500"></div>
-                <div className="p-4">
-                  <h4 className="font-bold text-gray-800 mb-1">Book Title</h4>
-                  <p className="text-sm text-gray-600 mb-2">Author Name</p>
-                  <button className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-2 rounded hover:from-indigo-600 hover:to-purple-700 transition">
-                    View Details
-                  </button>
+          {loadingPopular ? (
+            <p className="text-gray-600">Loading popular books...</p>
+          ) : popularBooks.length > 0 ? (
+            <div className="grid md:grid-cols-4 gap-6">
+              {popularBooks.slice(0, 4).map((book) => (
+                <div
+                  key={book.book_id}
+                  onClick={() => navigate(`/book/${book.book_id}`, { state: { book } })}
+                  className="bg-white rounded-lg shadow-md hover:shadow-xl transition overflow-hidden cursor-pointer transform hover:scale-105"
+                >
+                  <div className="h-64 bg-gradient-to-br from-yellow-400 via-orange-400 to-red-500 flex items-center justify-center">
+                    <h4 className="font-bold text-white text-sm line-clamp-3 p-4">{book.title}</h4>
+                  </div>
+                  <div className="p-4">
+                    <h4 className="font-bold text-gray-800 mb-1 line-clamp-2">{book.title}</h4>
+                    <p className="text-sm text-gray-600 mb-2">{book.author_name || "Unknown Author"}</p>
+                    {book.average_rating && (
+                      <p className="text-xs text-yellow-500 mb-3">
+                        ★ {book.average_rating.toFixed(1)} ({book.review_count || 0})
+                      </p>
+                    )}
+                    <button className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-2 rounded hover:from-indigo-600 hover:to-purple-700 transition text-sm font-semibold">
+                      View Details
+                    </button>
+                  </div>
                 </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-600">No popular books available yet.</p>
+          )}
+        </div>
+
+        {/* Personalized Section - Favorite Books */}
+        <div className="mb-16">
+          <h3 className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-red-600 bg-clip-text text-transparent mb-6">
+            Your Favorites
+          </h3>
+          {loadingFavorites ? (
+            <p className="text-gray-600">Loading your favorite books...</p>
+          ) : favoriteBooks.length > 0 ? (
+            <div className="grid md:grid-cols-4 gap-6">
+              {favoriteBooks.slice(0, 4).map((book) => (
+                <div
+                  key={book.book_id}
+                  onClick={() => navigate(`/book/${book.book_id}`, { state: { book } })}
+                  className="bg-white rounded-lg shadow-md hover:shadow-xl transition overflow-hidden cursor-pointer transform hover:scale-105"
+                >
+                  <div className="h-64 bg-gradient-to-br from-purple-400 via-pink-400 to-red-400 flex items-center justify-center">
+                    <h4 className="font-bold text-white text-sm line-clamp-3 p-4">{book.title}</h4>
+                  </div>
+                  <div className="p-4">
+                    <h4 className="font-bold text-gray-800 mb-1 line-clamp-2">{book.title}</h4>
+                    <p className="text-sm text-gray-600 mb-2">{book.author_name || "Unknown Author"}</p>
+                    {book.average_rating && (
+                      <p className="text-xs text-yellow-500 mb-3">
+                        ♥ Added to favorites
+                      </p>
+                    )}
+                    <button className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-2 rounded hover:from-indigo-600 hover:to-purple-700 transition text-sm font-semibold">
+                      View Details
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white rounded-lg shadow p-8 text-center">
+              <p className="text-gray-600 mb-4">You haven't marked any favorites yet.</p>
+              <button
+                onClick={() => navigate("/browse")}
+                className="bg-gradient-to-r from-pink-500 to-orange-500 text-white px-6 py-2 rounded-lg hover:from-pink-600 hover:to-orange-600 transition"
+              >
+                Browse Books
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Easy Management Section - Borrowing History */}
+        <div className="mb-16">
+          <h3 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent mb-6">
+            Borrowing History
+          </h3>
+          {loadingBorrowing ? (
+            <p className="text-gray-600">Loading your borrowing history...</p>
+          ) : borrowingHistory.length > 0 ? (
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gradient-to-r from-green-600 to-teal-600 text-white">
+                    <tr>
+                      <th className="px-6 py-3 text-left">Book Title</th>
+                      <th className="px-6 py-3 text-left">Author</th>
+                      <th className="px-6 py-3 text-left">Borrow Date</th>
+                      <th className="px-6 py-3 text-left">Return Date</th>
+                      <th className="px-6 py-3 text-left">Status</th>
+                      <th className="px-6 py-3 text-left">Librarian</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {borrowingHistory.slice(0, 5).map((entry) => (
+                      <tr key={entry.borrow_id} className="hover:bg-gray-50">
+                        <td className="px-6 py-3">{entry.title}</td>
+                        <td className="px-6 py-3 text-sm text-gray-600">{entry.author_name}</td>
+                        <td className="px-6 py-3 text-sm">
+                          {new Date(entry.borrow_date).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-3 text-sm">
+                          {entry.return_date ? new Date(entry.return_date).toLocaleDateString() : '-'}
+                        </td>
+                        <td className="px-6 py-3">
+                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                            entry.status === 'active' 
+                              ? 'bg-blue-100 text-blue-800' 
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {entry.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-3 text-sm text-gray-600">
+                          {entry.librarian_name || 'N/A'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            ))}
-          </div>
+            </div>
+          ) : (
+            <div className="bg-white rounded-lg shadow p-8 text-center">
+              <p className="text-gray-600">No borrowing history yet.</p>
+            </div>
+          )}
         </div>
       </main>
 
@@ -152,9 +371,15 @@ function Home() {
                 {user && user.profilePic ? (
                   <img src={user.profilePic} alt="profile" className="h-full w-full object-cover" />
                 ) : (
-                  <span className="text-2xl font-semibold text-gray-600">
-                    {user && user.fullname && (user.fullname.firstname ? user.fullname.firstname[0] : "U")}
-                  </span>
+                  <Avatar 
+                    name={
+                      user && user.fullname && (user.fullname.firstname || user.fullname.lastname)
+                        ? `${user.fullname.firstname || ''} ${user.fullname.lastname || ''}`.trim()
+                        : "User"
+                    } 
+                    size="80" 
+                    round 
+                  />
                 )}
               </div>
               <div className="flex-1">
@@ -183,8 +408,18 @@ function Home() {
               <input type="file" accept="image/*" onChange={handlePhotoUpload} className="text-sm" />
             </div>
 
-            <div className="flex justify-end gap-2">
-              <button onClick={() => setShowProfile(false)} className="px-4 py-2 rounded bg-gray-200">Close</button>
+            <div className="flex justify-between gap-2">
+              <button 
+                onClick={() => {
+                  localStorage.removeItem("token");
+                  localStorage.removeItem("pathsala_user");
+                  navigate("/");
+                }}
+                className="px-4 py-2 rounded bg-red-500 text-white font-semibold hover:bg-red-600 transition"
+              >
+                Logout
+              </button>
+              <button onClick={() => setShowProfile(false)} className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 transition">Close</button>
             </div>
           </div>
         </div>

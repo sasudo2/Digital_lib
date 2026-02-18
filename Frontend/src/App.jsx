@@ -9,6 +9,9 @@ import UserProtectedWrapper from "./pages/UserProtectedWrapper";
 import UserLogout from "./pages/UserLogout";
 import CaptainHome from "./pages/CaptainHome";
 import CaptainLogout from "./pages/CaptainLogout";
+import BrowseBooks from "./pages/BrowseBooks";
+import BookDetail from "./pages/BookDetail";
+import MyLibrary from "./pages/MyLibrary";
 function App() {
   return (
     <div>
@@ -38,6 +41,30 @@ function App() {
         <Route
           path="/captain/logout"
           element={<CaptainLogout></CaptainLogout>}
+        ></Route>
+        <Route
+          path="/browse"
+          element={
+            <UserProtectedWrapper>
+              <BrowseBooks />
+            </UserProtectedWrapper>
+          }
+        ></Route>
+        <Route
+          path="/book/:bookId"
+          element={
+            <UserProtectedWrapper>
+              <BookDetail />
+            </UserProtectedWrapper>
+          }
+        ></Route>
+        <Route
+          path="/my-library"
+          element={
+            <UserProtectedWrapper>
+              <MyLibrary />
+            </UserProtectedWrapper>
+          }
         ></Route>
       </Routes>
     </div>

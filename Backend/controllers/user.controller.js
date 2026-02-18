@@ -13,7 +13,12 @@ module.exports.registerUser = async (req, res, next) => {
   try {
     const isAlreadyUser = await User.findByEmail(email);
     if (isAlreadyUser) {
-      return res.status(401).json({ message: 'User already exists.' });
+      return res.status(400).json({ 
+        success: false, 
+        message: 'User already exists.', 
+        alert: true, 
+        alertType: 'danger' 
+      });
     }
     
     const hashedPassword = await User.hashPassword(password);
@@ -42,12 +47,18 @@ module.exports.loginUser = async (req, res, next) => {
   try {
     const user = await User.findByEmail(email);
     if (!user) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid email or password' 
+      });
     }
     
     const isMatch = await User.comparePassword(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid email or password' 
+      });
     }
     
     const token = User.generateAuthToken(user.id);
@@ -60,6 +71,8 @@ module.exports.loginUser = async (req, res, next) => {
 };
 
 module.exports.getUserProfile = (req, res, next) => {
+  console.log("from user controller",req.user);
+  alert(req.user);
   const { password, ...userWithoutPassword } = req.user;
   res.status(200).json(userWithoutPassword);
 };
