@@ -4,7 +4,7 @@ const { pool } = require('../db/db');
 
 async function insertBooksFromJSON() {
   try {
-    const filePath = path.join(__dirname, '../../Dataset/books_dataset.json');
+    const filePath = path.join(__dirname, '../../', 'Dataset', 'books_dataset.json');
     const data = fs.readFileSync(filePath, 'utf-8');
     const books = JSON.parse(data);
 
@@ -15,18 +15,14 @@ async function insertBooksFromJSON() {
 
     for (const book of books) {
       try {
-        // Extract author name safely
+        const title = book.title ? book.title.trim() : null;
         const authorName = book.author ? book.author.trim() : null;
         const genreName = book.genre ? book.genre.trim() : null;
         const publisherName = book.publisher ? book.publisher.trim() : null;
-        const title = book.title ? book.title.trim() : null;
-        const archiveUrl = book.archive_url || null;
-        const bookUrl = book.book_url || null;
+        const archiveUrl = book.archive_url ? book.archive_url.trim() : null;
+        const bookUrl = book.book_url ? book.book_url.trim() : null;
 
-        if (!title) {
-          skippedCount++;
-          continue;
-        }
+        if (!title) { skippedCount++; continue; }
 
         // Get or create author
         let authorId = null;
@@ -35,7 +31,6 @@ async function insertBooksFromJSON() {
             'SELECT author_id FROM authors WHERE LOWER(name) = LOWER($1)',
             [authorName]
           );
-          
           if (authorResult.rows.length === 0) {
             const newAuthor = await pool.query(
               'INSERT INTO authors (name) VALUES ($1) RETURNING author_id',
@@ -54,7 +49,6 @@ async function insertBooksFromJSON() {
             'SELECT genre_id FROM genres WHERE LOWER(name) = LOWER($1)',
             [genreName]
           );
-          
           if (genreResult.rows.length === 0) {
             const newGenre = await pool.query(
               'INSERT INTO genres (name) VALUES ($1) RETURNING genre_id',
@@ -73,7 +67,6 @@ async function insertBooksFromJSON() {
             'SELECT publisher_id FROM publishers WHERE LOWER(name) = LOWER($1)',
             [publisherName]
           );
-          
           if (publisherResult.rows.length === 0) {
             const newPublisher = await pool.query(
               'INSERT INTO publishers (name) VALUES ($1) RETURNING publisher_id',
@@ -85,7 +78,7 @@ async function insertBooksFromJSON() {
           }
         }
 
-        // Insert book with archive_url
+        // Insert book
         const checkBook = await pool.query(
           'SELECT book_id FROM books WHERE LOWER(title) = LOWER($1) AND author_id = $2',
           [title, authorId]
@@ -102,20 +95,15 @@ async function insertBooksFromJSON() {
           skippedCount++;
         }
 
-        // Progress log every 100 books
-        if ((insertedCount + skippedCount) % 100 === 0) {
-          console.log(`Progress: ${insertedCount + skippedCount}/${books.length} processed...`);
-        }
       } catch (error) {
         console.error(`Error inserting book "${book.title}":`, error.message);
         skippedCount++;
       }
     }
 
-    console.log(`\n✅ Insertion complete!`);
-    console.log(`📚 Inserted: ${insertedCount} books`);
-    console.log(`⏭️  Skipped: ${skippedCount} books`);
+    console.log(`✅ Insertion complete! Inserted: ${insertedCount}, Skipped: ${skippedCount}`);
     process.exit(0);
+
   } catch (error) {
     console.error('Fatal error:', error);
     process.exit(1);

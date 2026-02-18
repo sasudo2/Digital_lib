@@ -1,7 +1,6 @@
 import fs from "fs";
 
 async function fetchBooks(query, limit) {
-
   const searchRes = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=${limit}`);
   const searchData = await searchRes.json();
 
@@ -19,24 +18,14 @@ async function fetchBooks(query, limit) {
         const editions = editionsData.entries || [];
 
         for (const edition of editions) {
-          // Publisher: first non-empty from publishers array
-          if (edition.publishers?.length > 0) {
-            publisher = edition.publishers[0];
-          }
-
-          // Genre: first subject if exists
+          if (edition.publishers?.length > 0) publisher = edition.publishers[0];
           if (edition.subject?.length > 0 && genre === query.charAt(0).toUpperCase() + query.slice(1)) {
             genre = edition.subject[0];
           }
-
-          if (publisher && genre) break; // stop once we have both
+          if (publisher && genre) break;
         }
 
-        // Fallback for genre
-        if (!genre && work.subject?.length > 0) {
-          genre = work.subject[0];
-        }
-
+        if (!genre && work.subject?.length > 0) genre = work.subject[0];
       } catch (err) {
         console.warn(`Failed to fetch editions for ${work.key}: ${err.message}`);
       }
@@ -55,19 +44,34 @@ async function fetchBooks(query, limit) {
   return books;
 }
 
+// List of fiction genres
+const fictions = [
+  "Science Fiction","Fantasy","Historical Fiction","Mystery","Thriller","Romance",
+  "Horror","Adventure","Young Adult Fiction","Classic Fiction","Literary Fiction",
+  "Detective Fiction","Dystopian Fiction","Magical Realism","Western Fiction","Crime Fiction",
+  "Action Fiction","Spy Fiction","Psychological Fiction","Gothic Fiction","Paranormal Fiction",
+  "Urban Fiction","Satirical Fiction","Speculative Fiction","Political Fiction","Comic Fiction",
+  "Romantic Comedy Fiction"
+];
 
+async function fetchAllFictions() {
+  let allBooks = [];
 
-// Run and save
+  for (const fiction of fictions) {
+    console.log(`Fetching books for genre: ${fiction}...`);
+    try {
+      const books = await fetchBooks(fiction, 1500);
+      allBooks = allBooks.concat(books); // append to array
+      console.log(`Fetched ${books.length} books for ${fiction}`);
+    } catch (err) {
+      console.error(`Error fetching ${fiction}:`, err.message);
+    }
+  }
 
-const fictions=["Science Fiction","Fantasy","Historical Fiction","Mystery","Thriller","Romance","Horror","Adventure","Young Adult Fiction","Classic Fiction","Literary Fiction","Dystopian Fiction","Children’s Fiction","Detective Fiction",]
-for (const fiction of fictions) {
-    
-        fetchBooks(fiction, 1500)
-          .then((books) => {
-            fs.writeFileSync("books_dataset.json", JSON.stringify(books, null, 2));
-            console.log("Dataset saved with genre and publisher filled properly.");
-          })
-          .catch(console.error);
-
+  // Save all books at once
+  fs.writeFileSync("books_dataset.json", JSON.stringify(allBooks, null, 2));
+  console.log(`✅ Dataset saved with ${allBooks.length} books.`);
 }
 
+// Run the script
+fetchAllFictions();
