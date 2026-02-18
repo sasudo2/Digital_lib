@@ -89,6 +89,7 @@ async function createTables(){
       isbn VARCHAR(20) UNIQUE,
       publication_year INTEGER,
       book_url TEXT,
+      archive_url TEXT,
       author_id INTEGER REFERENCES authors(author_id),
       genre_id INTEGER REFERENCES genres(genre_id),
       publisher_id INTEGER REFERENCES publishers(publisher_id),

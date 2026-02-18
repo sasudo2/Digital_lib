@@ -14,6 +14,8 @@ const readingTrackerRoutes = require("./routes/readingTracker.routes");
 const favoriteRoutes = require("./routes/favorite.routes");
 const borrowingRoutes = require("./routes/borrowing.routes");
 const genreRoutes = require("./routes/genre.routes");
+const bookmarkRoutes = require("./routes/bookmark.routes");
+const readingProgressRoutes = require("./routes/readingProgress.routes");
 
 const { connectToDB } = require("./db/db");
 connectToDB();
@@ -35,4 +37,6 @@ app.use("/reading", readingTrackerRoutes);
 app.use("/favorites", favoriteRoutes);
 app.use("/borrowing", borrowingRoutes);
 app.use("/genres", genreRoutes);
+app.use("/bookmarks", bookmarkRoutes);
+app.use("/reading-progress", readingProgressRoutes);
 module.exports = app;

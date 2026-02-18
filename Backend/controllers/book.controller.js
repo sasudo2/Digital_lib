@@ -129,11 +129,30 @@ module.exports.deleteBook = async (req, res, next) => {
 module.exports.getPopularBooks = async (req, res, next) => {
   try {
     const { limit = 10 } = req.query;
-    const books = await Book.getTopRatedBooks(limit);
+    const books = await Book.getRandomPopularBooks(limit);
 
     res.status(200).json({ 
       success: true, 
       books 
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports.searchSuggestions = async (req, res, next) => {
+  try {
+    const { query = '', limit = 10 } = req.query;
+
+    if (!query || query.trim().length === 0) {
+      return res.status(200).json({ success: true, suggestions: [] });
+    }
+
+    const suggestions = await Book.searchSuggestions(query.trim(), limit);
+
+    res.status(200).json({ 
+      success: true, 
+      suggestions 
     });
   } catch (error) {
     next(error);

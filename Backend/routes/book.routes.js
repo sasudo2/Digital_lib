@@ -22,6 +22,9 @@ router.post(
 // Get all books
 router.get('/all', bookController.getAllBooks);
 
+// Get search suggestions (autocomplete)
+router.get('/search/suggestions', bookController.searchSuggestions);
+
 // Get popular books (top rated)
 router.get('/popular', bookController.getPopularBooks);
 
