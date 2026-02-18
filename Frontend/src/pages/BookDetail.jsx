@@ -3,6 +3,7 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { UserDataContext } from "../context/UserContext";
 import ReviewForm from "../components/ReviewForm";
+import ReadingProgressTracker from "../components/ReadingProgressTracker";
 import mainLogo from "../assets/main_logo.png";
 
 function BookDetail() {
@@ -19,12 +20,15 @@ function BookDetail() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [reviews, setReviews] = useState([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [refreshProgress, setRefreshProgress] = useState(false);
 
   useEffect(() => {
     if (!book) {
       fetchBook();
     } else {
       checkFavoriteStatus();
+      checkBookmarkStatus();
       fetchReviews();
     }
   }, [bookId, book]);
@@ -112,15 +116,61 @@ function BookDetail() {
     }
   };
 
+  const checkBookmarkStatus = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/bookmarks/check/${bookId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('userToken')}`,
+          },
+        }
+      );
+      setIsBookmarked(response.data.isBookmarked || false);
+    } catch (error) {
+      console.error('Error checking bookmark status:', error);
+    }
+  };
+
+  const toggleBookmark = async () => {
+    try {
+      if (isBookmarked) {
+        await axios.post(
+          `${import.meta.env.VITE_API_BASE_URL}/bookmarks/remove`,
+          { bookId: book.book_id },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('userToken')}`,
+            },
+          }
+        );
+      } else {
+        await axios.post(
+          `${import.meta.env.VITE_API_BASE_URL}/bookmarks/add`,
+          { bookId: book.book_id },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('userToken')}`,
+            },
+          }
+        );
+      }
+      setIsBookmarked(!isBookmarked);
+    } catch (error) {
+      console.error('Error toggling bookmark:', error);
+      setAlert('Failed to update bookmark status');
+    }
+  };
+
   const handlePdfClick = () => {
-    if (!book.book_url) {
-      setAlert("Book URL not available");
+    // Open the archive URL (Book from Internet Archive)
+    if (!book.archive_url) {
+      setAlert("Archive URL not available for this book");
       return;
     }
     setPdfStartTime(Date.now());
     setIsReadingPdf(true);
-    // Open the book URL (PDF or external link)
-    window.open(book.book_url, "_blank");
+    window.open(book.archive_url, "_blank");
   };
 
   const handleReturnFromPdf = async () => {
@@ -280,10 +330,10 @@ function BookDetail() {
             <div className="flex gap-4 mb-6">
               <button
                 onClick={handlePdfClick}
-                disabled={!book.book_url}
+                disabled={!book.archive_url}
                 className="flex-1 bg-gradient-to-r from-pink-500 to-orange-500 text-white py-4 rounded-lg font-bold text-lg hover:from-pink-600 hover:to-orange-600 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                📖 Open & Read
+                📖 Open Book
               </button>
               <button
                 onClick={toggleFavorite}
@@ -295,13 +345,29 @@ function BookDetail() {
               >
                 ♥
               </button>
+              <button
+                onClick={toggleBookmark}
+                className={`px-6 py-4 rounded-lg font-bold text-lg transition shadow-lg ${
+                  isBookmarked
+                    ? 'bg-blue-500 text-white hover:bg-blue-600'
+                    : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                }`}
+              >
+                🔖
+              </button>
             </div>
             
             <p className="text-sm text-gray-600 text-center">
-              💡 Time spent reading will be automatically tracked when you return
+              💡 Open the archive link to read the book
             </p>
           </div>
         </div>
+
+        {/* Reading Progress Tracker */}
+        <ReadingProgressTracker 
+          bookId={bookId}
+          onUpdate={() => setRefreshProgress(!refreshProgress)}
+        />
 
         {/* Review Form Section */}
         <ReviewForm 
