@@ -43,7 +43,7 @@ function CaptainSignup() {
       const data = response.data;
       localStorage.setItem("token", data.token);
       setCaptain(data.captain);
-      navigate("/captain-login");
+      navigate("/librarian-login");
     }
 
     setFirstname("");
@@ -152,7 +152,7 @@ function CaptainSignup() {
         </form>
         <p className="text-center">
           Already have an account?
-          <Link to="/captain-login" className="text-blue-600">
+          <Link to="/librarian-login" className="text-blue-600">
             Login
           </Link>
         </p>

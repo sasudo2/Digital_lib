@@ -5,6 +5,8 @@
  */
 const { Pool } = require('pg');
 
+require("dotenv").config()
+
 // takes the credentials from .env
 const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',

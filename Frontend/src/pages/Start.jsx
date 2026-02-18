@@ -8,7 +8,7 @@ function Start() {
         <div className="bg-white pb-7 py-4 px-4">
           <h2 className="text-3xl font-bold">Get Started with Pathsala.com</h2>
           <Link
-            to="/login"
+            to="/reader-login"
             className="flex items-center justify-center w-full bg-black text-white py-3 rounded mt-5"
           >
             Continue

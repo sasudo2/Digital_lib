@@ -1,7 +1,27 @@
-import React from "react";
+import React, { useContext, useState } from "react";
 import mainLogo from "../assets/main_logo.png";
+import { UserDataContext } from "../context/UserContext";
 
 function Home() {
+  const { user, setUser } = useContext(UserDataContext);
+  const [showProfile, setShowProfile] = useState(false);
+
+  const formatTime = (minutes = 0) => {
+    const hrs = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hrs}h ${mins}m`;
+  };
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setUser({ ...user, profilePic: reader.result });
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
       {/* Header */}
@@ -11,15 +31,27 @@ function Home() {
             <img src={mainLogo} alt="Pathsala Logo" className="h-12 w-12 object-contain" />
             <h1 className="text-3xl font-bold text-white">Pathsala</h1>
           </div>
-          <nav className="flex gap-6">
+          <nav className="flex gap-4 items-center">
             <button className="text-white hover:text-yellow-300 font-medium transition">
               Browse Books
             </button>
             <button className="text-white hover:text-yellow-300 font-medium transition">
               My Library
             </button>
-            <button className="text-white hover:text-yellow-300 font-medium transition">
-              Profile
+
+            <button
+              onClick={() => setShowProfile(true)}
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full transition"
+              aria-label="Open profile"
+            >
+              {user && user.profilePic ? (
+                <img src={user.profilePic} alt="avatar" className="h-8 w-8 rounded-full object-cover" />
+              ) : (
+                <div className="h-8 w-8 rounded-full bg-yellow-300 flex items-center justify-center text-sm font-semibold text-gray-800">
+                  {user && user.fullname && (user.fullname.firstname ? user.fullname.firstname[0] : "U")}
+                </div>
+              )}
+              <span className="text-white hidden sm:inline">Profile</span>
             </button>
           </nav>
         </div>
@@ -110,6 +142,53 @@ function Home() {
       </main>
 
       {/* Footer */}
+      {showProfile && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowProfile(false)} />
+          <div className="relative bg-white rounded-lg shadow-xl w-11/12 max-w-md p-6 z-10">
+            <h3 className="text-xl font-bold mb-4">Your Profile</h3>
+            <div className="flex gap-4 items-center mb-4">
+              <div className="h-20 w-20 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center">
+                {user && user.profilePic ? (
+                  <img src={user.profilePic} alt="profile" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-2xl font-semibold text-gray-600">
+                    {user && user.fullname && (user.fullname.firstname ? user.fullname.firstname[0] : "U")}
+                  </span>
+                )}
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold">{user?.fullname?.firstname} {user?.fullname?.lastname}</p>
+                <p className="text-sm text-gray-600">{user?.email || "No email set"}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-sm mb-4">
+              <div className="p-3 bg-gray-50 rounded">
+                <div className="text-xs text-gray-500">Read Books</div>
+                <div className="font-semibold">{(user?.readBooks && user.readBooks.length) || 0}</div>
+              </div>
+              <div className="p-3 bg-gray-50 rounded">
+                <div className="text-xs text-gray-500">Time Spent</div>
+                <div className="font-semibold">{formatTime(user?.timeSpentMinutes)}</div>
+              </div>
+              <div className="col-span-2 p-3 bg-gray-50 rounded">
+                <div className="text-xs text-gray-500">Account Created</div>
+                <div className="font-semibold">{user?.createdAt ? new Date(user.createdAt).toLocaleString() : "-"}</div>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm text-gray-700 mb-2">Profile Photo</label>
+              <input type="file" accept="image/*" onChange={handlePhotoUpload} className="text-sm" />
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setShowProfile(false)} className="px-4 py-2 rounded bg-gray-200">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
       <footer className="bg-gradient-to-r from-gray-900 via-purple-900 to-indigo-900 text-white py-12 mt-16">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8 mb-8">

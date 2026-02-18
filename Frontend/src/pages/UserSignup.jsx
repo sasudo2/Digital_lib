@@ -36,7 +36,7 @@ function UserSignup() {
       setLastname("");
       setEmail("");
       setPassword("");
-      navigate("/login");
+      navigate("/reader-login");
     }
   };
   return (
@@ -99,7 +99,7 @@ function UserSignup() {
         </form>
         <p className="text-center">
           Already have an account?
-          <Link to="/login" className="text-blue-600">
+          <Link to="/reader-login" className="text-blue-600">
             Login
           </Link>
         </p>

@@ -67,14 +67,14 @@ function UserLogin() {
         </form>
         <p className="text-center">
           New here? 
-          <Link to="/signup" className="text-blue-600">
+          <Link to="/reader-signup" className="text-blue-600">
              Create new account.
           </Link>
         </p>
       </div>
       <div>
         <Link
-          to="/captain-login"
+          to="/librarian-login"
           className="bg-[#10b461] flex items-center justify-center mb-5 text-white font-semibold mb-7 rounded px-4 py-2 w-full text-lg placeholder:"
         >
           Sign in as Librerian

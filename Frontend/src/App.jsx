@@ -14,10 +14,10 @@ function App() {
     <div>
       <Routes>
         <Route path="/" element={<Start />}></Route>
-        <Route path="/signup" element={<UserSignup />}></Route>
-        <Route path="/login" element={<UserLogin />}></Route>
-        <Route path="/captain-signup" element={<CaptainSignup />}></Route>
-        <Route path="/captain-login" element={<CaptainLogin />}></Route>
+        <Route path="/reader-signup" element={<UserSignup />}></Route>
+        <Route path="/reader-login" element={<UserLogin />}></Route>
+        <Route path="/librarian-signup" element={<CaptainSignup />}></Route>
+        <Route path="/librarian-login" element={<CaptainLogin />}></Route>
         <Route
           path="/home"
           element={
