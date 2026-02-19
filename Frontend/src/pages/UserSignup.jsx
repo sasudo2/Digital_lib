@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { UserDataContext } from "../context/UserContext";
+import mainLogo from "../assets/main_logo.png"
 
 function UserSignup() {
   const [email, setEmail] = useState("");
@@ -44,7 +45,7 @@ function UserSignup() {
       <div>
         <img
           className="w-16 mb-10"
-          src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Uber_logo_2018.png/1200px-Uber_logo_2018.png"
+          src={ mainLogo }
           alt=""
         />
         <form
