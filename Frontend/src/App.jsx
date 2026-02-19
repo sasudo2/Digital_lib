@@ -9,15 +9,18 @@ import UserProtectedWrapper from "./pages/UserProtectedWrapper";
 import UserLogout from "./pages/UserLogout";
 import CaptainHome from "./pages/CaptainHome";
 import CaptainLogout from "./pages/CaptainLogout";
+import BrowseBooks from "./pages/BrowseBooks";
+import BookDetail from "./pages/BookDetail";
+import MyLibrary from "./pages/MyLibrary";
 function App() {
   return (
     <div>
       <Routes>
         <Route path="/" element={<Start />}></Route>
-        <Route path="/signup" element={<UserSignup />}></Route>
-        <Route path="/login" element={<UserLogin />}></Route>
-        <Route path="/captain-signup" element={<CaptainSignup />}></Route>
-        <Route path="/captain-login" element={<CaptainLogin />}></Route>
+        <Route path="/reader-signup" element={<UserSignup />}></Route>
+        <Route path="/reader-login" element={<UserLogin />}></Route>
+        <Route path="/librarian-signup" element={<CaptainSignup />}></Route>
+        <Route path="/librarian-login" element={<CaptainLogin />}></Route>
         <Route
           path="/home"
           element={
@@ -38,6 +41,30 @@ function App() {
         <Route
           path="/captain/logout"
           element={<CaptainLogout></CaptainLogout>}
+        ></Route>
+        <Route
+          path="/browse"
+          element={
+            <UserProtectedWrapper>
+              <BrowseBooks />
+            </UserProtectedWrapper>
+          }
+        ></Route>
+        <Route
+          path="/book/:bookId"
+          element={
+            <UserProtectedWrapper>
+              <BookDetail />
+            </UserProtectedWrapper>
+          }
+        ></Route>
+        <Route
+          path="/my-library"
+          element={
+            <UserProtectedWrapper>
+              <MyLibrary />
+            </UserProtectedWrapper>
+          }
         ></Route>
       </Routes>
     </div>

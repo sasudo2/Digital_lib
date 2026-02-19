@@ -9,31 +9,43 @@ import mainLogo from "../assets/main_logo.png";
 function UserLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [alert, setAlert] = useState("");
   // const [userData, setUserData] = useState({});
   const navigate = useNavigate();
   const { user, setUser } = useContext(UserDataContext);
 
   const submitHandler = async (e) => {
     e.preventDefault();
+    setAlert("");
     const userData = { email: email, password: password };
-    const response = await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/users/login`,
-      userData
-    );
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/users/login`,
+        userData
+      );
 
-    if (response.status === 200) {
-      const data = response.data;
-      localStorage.setItem("token",data.token)
-      setUser(data.user);
-      navigate("/home");
+      if (response.status === 200) {
+        const data = response.data;
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("pathsala_user", JSON.stringify(data.user));
+        setUser(data.user);
+        navigate("/home");
+      }
+      setEmail("");
+      setPassword("");
+    } catch (error) {
+      if (error.response && error.response.status === 401) {
+        setAlert(error.response.data.message || "Invalid email or password");
+      } else {
+        setAlert("An error occurred. Please try again.");
+      }
     }
-    setEmail("");
-    setPassword("");
   };
   return (
     <div className="p-7 h-screen flex flex-col justify-between">
       <div>
         <img className="w-16 mb-10" src={mainLogo} alt="Digital Library" />
+       
         <form
           onSubmit={(e) => {
             submitHandler(e);
@@ -61,20 +73,25 @@ function UserLogin() {
             type="password"
             placeholder="password"
           />
+           {alert && (
+          <div className="bg-red-500 text-white p-3 rounded mb-5 text-center">
+            {alert}
+          </div>
+        )}
           <button className="flex items-center justify-center w-full bg-black text-white py-3 rounded mt-5">
             Login
           </button>
         </form>
         <p className="text-center">
           New here? 
-          <Link to="/signup" className="text-blue-600">
+          <Link to="/reader-signup" className="text-blue-600">
              Create new account.
           </Link>
         </p>
       </div>
       <div>
         <Link
-          to="/captain-login"
+          to="/librarian-login"
           className="bg-[#10b461] flex items-center justify-center mb-5 text-white font-semibold mb-7 rounded px-4 py-2 w-full text-lg placeholder:"
         >
           Sign in as Librerian

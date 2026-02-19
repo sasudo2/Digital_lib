@@ -11,12 +11,14 @@ function UserSignup() {
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
   const [userDate, setUserDate] = useState({});
+  const [alert, setAlert] = useState("");
 
   const navigate = useNavigate();
   const { user, setUser } = useContext(UserDataContext);
 
   const submitHandler = async (e) => {
     e.preventDefault();
+    setAlert("");
     const newUser = {
       fullname: {
         firstname: firstname,
@@ -25,19 +27,28 @@ function UserSignup() {
       email: email,
       password: password,
     };
-    const response = await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/users/register`,
-      newUser
-    );
-    if (response.status === 201) {
-      const data = response.data;
-      setUser(data.user);
-      localStorage.setItem("token", data.token);
-      setFirstname("");
-      setLastname("");
-      setEmail("");
-      setPassword("");
-      navigate("/login");
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/users/register`,
+        newUser
+      );
+      if (response.status === 201) {
+        const data = response.data;
+        localStorage.setItem("pathsala_user", JSON.stringify(data.user));
+        localStorage.setItem("token", data.token);
+        setUser(data.user);
+        setFirstname("");
+        setLastname("");
+        setEmail("");
+        setPassword("");
+        navigate("/reader-login");
+      }
+    } catch (error) {
+      if (error.response && error.response.status === 400) {
+        setAlert(error.response.data.message || "User already exists.");
+      } else {
+        setAlert("An error occurred. Please try again.");
+      }
     }
   };
   return (
@@ -48,6 +59,7 @@ function UserSignup() {
           src={ mainLogo }
           alt=""
         />
+        
         <form
           onSubmit={(e) => {
             submitHandler(e);
@@ -94,13 +106,19 @@ function UserSignup() {
             type="password"
             placeholder="password"
           />
+          {alert && (
+          <div className="bg-red-500 text-white p-3 rounded mb-5 text-center">
+            {alert}
+          </div>
+        )}
+
           <button className="flex items-center justify-center w-full bg-black text-white py-3 rounded mt-5">
             Create account
           </button>
         </form>
         <p className="text-center">
           Already have an account?
-          <Link to="/login" className="text-blue-600">
+          <Link to="/reader-login" className="text-blue-600">
             Login
           </Link>
         </p>

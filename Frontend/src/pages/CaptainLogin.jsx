@@ -70,18 +70,18 @@ function CaptainLogin() {
           </button>
         </form>
         <p className="text-center">
-          Join a fleet?
-          <Link to="/captain-signup" className="text-blue-600">
-            Register as a captain
+          Join wisdom class?
+          <Link to="/librarian-signup" className="text-blue-600">
+            Register as a Librarian
           </Link>
         </p>
       </div>
       <div>
         <Link
-          to="/login"
+          to="/reader-login"
           className="bg-[#d5622d] flex items-center justify-center mb-5 text-white font-semibold mb-7 rounded px-4 py-2 w-full text-lg placeholder:"
         >
-          Sign in as User
+          Sign in as Reader
         </Link>
       </div>
     </div>

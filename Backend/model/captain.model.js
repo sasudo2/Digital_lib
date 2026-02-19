@@ -3,13 +3,13 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
 class Captain {
-  static async create({ firstname, lastname, email, password, vehicleColor, vehiclePlate, vehicleCapacity, vehicleType }) {
+  static async create({ firstname, lastname, email, password }) {
     const query = `
-      INSERT INTO captains (firstname, lastname, email, password, vehicle_color, vehicle_plate, vehicle_capacity, vehicle_type)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      RETURNING id, firstname, lastname, email, status, vehicle_color, vehicle_plate, vehicle_capacity, vehicle_type, created_at, updated_at
+      INSERT INTO captains (firstname, lastname, email, password)
+      VALUES ($1, $2, $3, $4)
+      RETURNING id, firstname, lastname, email, status, created_at, updated_at
     `;
-    const values = [firstname, lastname, email, password, vehicleColor, vehiclePlate, vehicleCapacity, vehicleType];
+    const values = [firstname, lastname, email, password];
     const result = await pool.query(query, values);
     return result.rows[0];
   }
@@ -26,14 +26,21 @@ class Captain {
     return result.rows[0];
   }
 
+  static async findAll() {
+    const query = 'SELECT id, firstname, lastname, email, status, created_at FROM captains ORDER BY created_at DESC';
+    const result = await pool.query(query);
+    return result.rows;
+  }
+
   static async updateSocketId(id, socketId) {
     const query = 'UPDATE captains SET socket_id = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2';
     await pool.query(query, [socketId, id]);
   }
 
-  static async updateLocation(id, lat, lon) {
-    const query = 'UPDATE captains SET location_lat = $1, location_lon = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3';
-    await pool.query(query, [lat, lon, id]);
+  static async updateStatus(id, status) {
+    const query = 'UPDATE captains SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *';
+    const result = await pool.query(query, [status, id]);
+    return result.rows[0];
   }
 
   static generateAuthToken(captainId) {
