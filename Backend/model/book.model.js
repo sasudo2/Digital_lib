@@ -147,7 +147,7 @@ class Book {
   // Search suggestions - for autocomplete/dropdown suggestions
   static async searchSuggestions(searchTerm, limit = 10) {
     const query = `
-      SELECT DISTINCT b.book_id, b.title, b.archive_url, a.name as author_name, g.name as genre_name,
+      SELECT DISTINCT b.book_id, b.title, b.archive_url, b.book_url, a.name as author_name, g.name as genre_name,
              AVG(r.rating) as average_rating
       FROM books b
       LEFT JOIN authors a ON b.author_id = a.author_id

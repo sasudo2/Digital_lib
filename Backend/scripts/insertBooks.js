@@ -102,6 +102,7 @@ async function insertBooksFromJSON() {
     }
 
     console.log(`✅ Insertion complete! Inserted: ${insertedCount}, Skipped: ${skippedCount}`);
+    await pool.end();
     process.exit(0);
 
   } catch (error) {
