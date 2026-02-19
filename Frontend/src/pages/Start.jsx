@@ -1,21 +1,26 @@
 import { Link } from "react-router-dom";
-import main_logo from "../assets/main_logo.png";
+import SiteHeader from "../components/SiteHeader";
+import SiteFooter from "../components/SiteFooter";
 function Start() {
   return (
-    <>
-      <div className="bg-cover bg-center bg-[url(https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D)] h-screen pt-8 flex justify-between flex-col w-full ">
-        <img className="w-40 mx-auto" src={main_logo} alt="" />
-        <div className="bg-white pb-7 py-4 px-4">
-          <h2 className="text-3xl font-bold">Get Started with Pathsala.com</h2>
+    <div className="min-h-screen bg-white text-gray-900 flex flex-col">
+      <SiteHeader />
+      <main className="flex-1 container mx-auto px-4 py-16 flex items-center justify-center">
+        <div className="max-w-xl text-center">
+          <h2 className="text-4xl font-bold mb-4">Get Started with Pathsala</h2>
+          <p className="text-gray-700 mb-8">
+            Sign in to browse thousands of books and track your reading progress.
+          </p>
           <Link
             to="/reader-login"
-            className="flex items-center justify-center w-full bg-black text-white py-3 rounded mt-5"
+            className="inline-flex items-center justify-center bg-black text-white px-8 py-3 rounded"
           >
             Continue
           </Link>
         </div>
-      </div>
-    </>
+      </main>
+      <SiteFooter />
+    </div>
   );
 }
 export default Start;

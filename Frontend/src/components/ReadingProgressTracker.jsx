@@ -16,11 +16,19 @@ export default function ReadingProgressTracker({ bookId, onUpdate }) {
   const fetchProgress = async () => {
     try {
       setLoading(true);
+      const token = localStorage.getItem('userToken') || localStorage.getItem('token');
+      if (!token) {
+        setProgress({ current_page: 0, is_finished: false });
+        setCurrentPage(0);
+        setIsFinished(false);
+        setLoading(false);
+        return;
+      }
       const response = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL}/reading-progress/${bookId}`,
+        `${import.meta.env.VITE_BASE_URL}/reading-progress/${bookId}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('userToken')}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -38,12 +46,18 @@ export default function ReadingProgressTracker({ bookId, onUpdate }) {
   const handleUpdateProgress = async () => {
     try {
       setSaving(true);
+      const token = localStorage.getItem('userToken') || localStorage.getItem('token');
+      if (!token) {
+        setMessage('Login to save progress');
+        setSaving(false);
+        return;
+      }
       await axios.put(
-        `${import.meta.env.VITE_API_BASE_URL}/reading-progress/update`,
+        `${import.meta.env.VITE_BASE_URL}/reading-progress/update`,
         { bookId, currentPage, isFinished },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('userToken')}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -61,12 +75,18 @@ export default function ReadingProgressTracker({ bookId, onUpdate }) {
   const handleMarkAsFinished = async () => {
     try {
       setSaving(true);
+      const token = localStorage.getItem('userToken') || localStorage.getItem('token');
+      if (!token) {
+        setMessage('Login to mark as finished');
+        setSaving(false);
+        return;
+      }
       await axios.put(
-        `${import.meta.env.VITE_API_BASE_URL}/reading-progress/${bookId}/finish`,
+        `${import.meta.env.VITE_BASE_URL}/reading-progress/${bookId}/finish`,
         {},
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('userToken')}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );

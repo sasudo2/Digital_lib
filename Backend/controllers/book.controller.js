@@ -47,7 +47,7 @@ module.exports.getBook = async (req, res, next) => {
 
 module.exports.getAllBooks = async (req, res, next) => {
   try {
-    const { page = 1, limit = 10, title, authorId, genreId, search } = req.query;
+    const { page = 2, limit = 100, title, authorId, genreId, search } = req.query;
     const offset = (page - 1) * limit;
 
     let books;
@@ -134,6 +134,40 @@ module.exports.getPopularBooks = async (req, res, next) => {
     res.status(200).json({ 
       success: true, 
       books 
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports.getRandomBooks = async (req, res, next) => {
+  try {
+    const { limit = 50 } = req.query;
+    const books = await Book.getRandomBooks(limit);
+
+    res.status(200).json({
+      success: true,
+      books
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports.searchByPrefix = async (req, res, next) => {
+  try {
+    const { query = '', limit = 50, page = 1 } = req.query;
+
+    if (!query || query.trim().length === 0) {
+      return res.status(200).json({ success: true, books: [] });
+    }
+
+    const offset = (page - 1) * limit;
+    const books = await Book.searchByPrefix(query.trim(), limit, offset);
+
+    res.status(200).json({
+      success: true,
+      books
     });
   } catch (error) {
     next(error);

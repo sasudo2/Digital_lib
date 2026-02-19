@@ -162,8 +162,43 @@ class Book {
     return result.rows;
   }
 
+  static async searchByPrefix(searchTerm, limit = 50, offset = 0) {
+    const query = `
+      SELECT b.*, a.name as author_name, g.name as genre_name, p.name as publisher_name,
+             AVG(r.rating) as average_rating, COUNT(DISTINCT r.review_id) as review_count
+      FROM books b
+      LEFT JOIN authors a ON b.author_id = a.author_id
+      LEFT JOIN genres g ON b.genre_id = g.genre_id
+      LEFT JOIN publishers p ON b.publisher_id = p.publisher_id
+      LEFT JOIN reviews r ON b.book_id = r.book_id
+      WHERE LOWER(b.title) LIKE LOWER($1) OR LOWER(a.name) LIKE LOWER($1)
+      GROUP BY b.book_id, a.author_id, g.genre_id, p.publisher_id
+      ORDER BY b.title ASC
+      LIMIT $2 OFFSET $3
+    `;
+    const result = await pool.query(query, [`${searchTerm}%`, limit, offset]);
+    return result.rows;
+  }
+
   // Get random popular books (10 random highly-rated books)
   static async getRandomPopularBooks(limit = 10) {
+    const query = `
+      SELECT b.*, a.name as author_name, g.name as genre_name, p.name as publisher_name,
+             AVG(r.rating) as average_rating, COUNT(DISTINCT r.review_id) as review_count
+      FROM books b
+      LEFT JOIN authors a ON b.author_id = a.author_id
+      LEFT JOIN genres g ON b.genre_id = g.genre_id
+      LEFT JOIN publishers p ON b.publisher_id = p.publisher_id
+      LEFT JOIN reviews r ON b.book_id = r.book_id
+      GROUP BY b.book_id, a.author_id, g.genre_id, p.publisher_id
+      ORDER BY RANDOM()
+      LIMIT $1
+    `;
+    const result = await pool.query(query, [limit]);
+    return result.rows;
+  }
+
+  static async getRandomBooks(limit = 50) {
     const query = `
       SELECT b.*, a.name as author_name, g.name as genre_name, p.name as publisher_name,
              AVG(r.rating) as average_rating, COUNT(DISTINCT r.review_id) as review_count

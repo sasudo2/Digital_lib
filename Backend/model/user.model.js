@@ -114,7 +114,8 @@ class User {
   static async getFavoriteBooks(userId) {
     const query = `
       SELECT b.*, a.name as author_name, g.name as genre_name, p.name as publisher_name,
-             AVG(r.rating) as average_rating
+             AVG(r.rating) as average_rating,
+             MAX(ufb.created_at) as favorite_added_at
       FROM user_favorite_books ufb
       JOIN books b ON ufb.book_id = b.book_id
       LEFT JOIN authors a ON b.author_id = a.author_id
@@ -123,7 +124,7 @@ class User {
       LEFT JOIN reviews r ON b.book_id = r.book_id
       WHERE ufb.user_id = $1
       GROUP BY b.book_id, a.author_id, g.genre_id, p.publisher_id
-      ORDER BY ufb.created_at DESC
+      ORDER BY favorite_added_at DESC
     `;
     const result = await pool.query(query, [userId]);
     return result.rows;

@@ -4,8 +4,9 @@
  * allowing multiple concurrent queries without creating a new connection each time.
  */
 const { Pool } = require('pg');
+const path = require('path');
 
-require("dotenv").config()
+require("dotenv").config({ path: path.join(__dirname, '../.env') })
 
 // takes the credentials from .env
 const pool = new Pool({
@@ -85,7 +86,7 @@ async function createTables(){
   const createBooksTable = `
     CREATE TABLE IF NOT EXISTS books (
       book_id SERIAL PRIMARY KEY,
-      title VARCHAR(255) NOT NULL,
+      title TEXT NOT NULL,
       isbn VARCHAR(20) UNIQUE,
       publication_year INTEGER,
       book_url TEXT NULL,
@@ -157,6 +158,29 @@ async function createTables(){
     );
   `;
 
+  const createUserBookmarksTable = `
+    CREATE TABLE IF NOT EXISTS user_bookmarks (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      book_id INTEGER NOT NULL REFERENCES books(book_id) ON DELETE CASCADE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(user_id, book_id)
+    );
+  `;
+
+  const createUserReadingProgressTable = `
+    CREATE TABLE IF NOT EXISTS user_reading_progress (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      book_id INTEGER NOT NULL REFERENCES books(book_id) ON DELETE CASCADE,
+      current_page INTEGER DEFAULT 0,
+      is_finished BOOLEAN DEFAULT FALSE,
+      last_read_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      finished_at TIMESTAMP,
+      UNIQUE(user_id, book_id)
+    );
+  `;
+
   const createBookBorrowingHistoryTable = `
     CREATE TABLE IF NOT EXISTS book_borrowing_history (
       borrow_id SERIAL PRIMARY KEY,
@@ -190,6 +214,8 @@ async function createTables(){
     await pool.query(createAdminActionsTable);
     await pool.query(createUserReadBooksTable);
     await pool.query(createUserFavoriteBooksTable);
+    await pool.query(createUserBookmarksTable);
+    await pool.query(createUserReadingProgressTable);
     await pool.query(createBookBorrowingHistoryTable);
     await pool.query(createBlacklistTokensTable);
     console.log('All tables created successfully');

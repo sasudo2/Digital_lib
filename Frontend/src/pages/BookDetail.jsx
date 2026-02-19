@@ -4,7 +4,9 @@ import axios from "axios";
 import { UserDataContext } from "../context/UserContext";
 import ReviewForm from "../components/ReviewForm";
 import ReadingProgressTracker from "../components/ReadingProgressTracker";
-import mainLogo from "../assets/main_logo.png";
+import SiteHeader from "../components/SiteHeader";
+import SiteFooter from "../components/SiteFooter";
+import Avatar from "react-avatar";
 
 function BookDetail() {
   const { bookId } = useParams();
@@ -22,6 +24,23 @@ function BookDetail() {
   const [loadingReviews, setLoadingReviews] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [refreshProgress, setRefreshProgress] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+
+  const formatTime = (minutes = 0) => {
+    const hrs = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hrs}h ${mins}m`;
+  };
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setUser({ ...user, profilePic: reader.result });
+    };
+    reader.readAsDataURL(file);
+  };
 
   useEffect(() => {
     if (!book) {
@@ -53,11 +72,16 @@ function BookDetail() {
 
   const checkFavoriteStatus = async () => {
     try {
+      const token = localStorage.getItem('userToken') || localStorage.getItem('token');
+      if (!token) {
+        setIsFavorite(false);
+        return;
+      }
       const response = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL}/favorites/check/${bookId}`,
+        `${import.meta.env.VITE_BASE_URL}/favorites/check/${bookId}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('userToken')}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -71,10 +95,10 @@ function BookDetail() {
     try {
       setLoadingReviews(true);
       const response = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL}/reviews/book/${bookId}`,
+        `${import.meta.env.VITE_BASE_URL}/reviews/book/${bookId}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('userToken')}`,
+            Authorization: `Bearer ${localStorage.getItem('userToken') || localStorage.getItem('token')}`,
           },
         }
       );
@@ -88,23 +112,28 @@ function BookDetail() {
 
   const toggleFavorite = async () => {
     try {
+      const token = localStorage.getItem('userToken') || localStorage.getItem('token');
+      if (!token) {
+        setAlert('Login to manage favorites');
+        return;
+      }
       if (isFavorite) {
         await axios.post(
-          `${import.meta.env.VITE_API_BASE_URL}/favorites/remove`,
+          `${import.meta.env.VITE_BASE_URL}/favorites/remove`,
           { bookId: book.book_id },
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('userToken')}`,
+              Authorization: `Bearer ${token}`,
             },
           }
         );
       } else {
         await axios.post(
-          `${import.meta.env.VITE_API_BASE_URL}/favorites/add`,
+          `${import.meta.env.VITE_BASE_URL}/favorites/add`,
           { bookId: book.book_id },
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('userToken')}`,
+              Authorization: `Bearer ${token}`,
             },
           }
         );
@@ -118,11 +147,16 @@ function BookDetail() {
 
   const checkBookmarkStatus = async () => {
     try {
+      const token = localStorage.getItem('userToken') || localStorage.getItem('token');
+      if (!token) {
+        setIsBookmarked(false);
+        return;
+      }
       const response = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL}/bookmarks/check/${bookId}`,
+        `${import.meta.env.VITE_BASE_URL}/bookmarks/check/${bookId}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('userToken')}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -134,23 +168,28 @@ function BookDetail() {
 
   const toggleBookmark = async () => {
     try {
+      const token = localStorage.getItem('userToken') || localStorage.getItem('token');
+      if (!token) {
+        setAlert('Login to manage bookmarks');
+        return;
+      }
       if (isBookmarked) {
         await axios.post(
-          `${import.meta.env.VITE_API_BASE_URL}/bookmarks/remove`,
+          `${import.meta.env.VITE_BASE_URL}/bookmarks/remove`,
           { bookId: book.book_id },
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('userToken')}`,
+              Authorization: `Bearer ${token}`,
             },
           }
         );
       } else {
         await axios.post(
-          `${import.meta.env.VITE_API_BASE_URL}/bookmarks/add`,
+          `${import.meta.env.VITE_BASE_URL}/bookmarks/add`,
           { bookId: book.book_id },
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('userToken')}`,
+              Authorization: `Bearer ${token}`,
             },
           }
         );
@@ -164,7 +203,7 @@ function BookDetail() {
 
   const handlePdfClick = () => {
     // Open the archive URL first, fallback to book URL if not available
-    const urlToOpen = book.archive_url || book.book_url;
+    const urlToOpen = book.archive_url?.trim() || book.book_url?.trim();
     
     if (!urlToOpen) {
       setAlert("Archive URL and Book URL are not available for this book");
@@ -202,7 +241,7 @@ function BookDetail() {
           setUser(response.data.user);
           localStorage.setItem("pathsala_user", JSON.stringify(response.data.user));
           
-          setAlert(`📚 Great! You read for ${timeSpentMinutes} minutes. Keep it up!`);
+          setAlert(`Great! You read for ${timeSpentMinutes} minutes. Keep it up!`);
           setPdfStartTime(null);
           setIsReadingPdf(false);
         }
@@ -227,7 +266,7 @@ function BookDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
         <p className="text-xl text-gray-600">Loading book details...</p>
       </div>
     );
@@ -235,21 +274,14 @@ function BookDetail() {
 
   if (!book) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
-        <header className="bg-gradient-to-r from-indigo-600 to-purple-600 shadow-lg">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center gap-3">
-              <img src={mainLogo} alt="Pathsala Logo" className="h-12 w-12 object-contain" />
-              <h1 className="text-3xl font-bold text-white">Pathsala</h1>
-            </div>
-          </div>
-        </header>
+      <div className="min-h-screen bg-white text-gray-900">
+        <SiteHeader />
         <div className="container mx-auto px-4 py-12">
           <div className="text-center">
             <p className="text-2xl text-gray-600 mb-6">Book not found</p>
             <button
               onClick={() => navigate("/browse")}
-              className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700"
+              className="bg-black text-white px-6 py-2 rounded hover:bg-gray-800"
             >
               Back to Browse
             </button>
@@ -260,27 +292,13 @@ function BookDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-indigo-600 to-purple-600 shadow-lg">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/home")}>
-            <img src={mainLogo} alt="Pathsala Logo" className="h-12 w-12 object-contain" />
-            <h1 className="text-3xl font-bold text-white">Pathsala</h1>
-          </div>
-          <button
-            onClick={() => navigate("/browse")}
-            className="text-white hover:text-yellow-300 font-medium transition"
-          >
-            ← Back
-          </button>
-        </div>
-      </header>
+    <div className="min-h-screen bg-white text-gray-900">
+      <SiteHeader showProfileButton onProfileClick={() => setShowProfile(true)} />
 
       <main className="container mx-auto px-4 py-12">
         {/* Alert */}
         {alert && (
-          <div className="bg-green-500 text-white p-4 rounded mb-6 text-center">
+          <div className="bg-black text-white p-4 rounded mb-6 text-center">
             {alert}
           </div>
         )}
@@ -288,7 +306,7 @@ function BookDetail() {
         <div className="grid md:grid-cols-3 gap-8 mb-12">
           {/* Book Cover */}
           <div className="md:col-span-1">
-            <div className="h-96 bg-gradient-to-br from-yellow-400 via-orange-400 to-red-500 rounded-lg shadow-lg flex items-center justify-center p-4">
+            <div className="h-96 bg-gradient-to-br from-gray-900 via-gray-700 to-gray-600 rounded-lg shadow-lg flex items-center justify-center p-4">
               <div className="text-center">
                 <p className="text-white text-2xl font-bold line-clamp-4">{book.title}</p>
               </div>
@@ -334,7 +352,7 @@ function BookDetail() {
               <button
                 onClick={handlePdfClick}
                 disabled={!book.archive_url && !book.book_url}
-                className="flex-1 bg-gradient-to-r from-pink-500 to-orange-500 text-white py-4 rounded-lg font-bold text-lg hover:from-pink-600 hover:to-orange-600 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 bg-black text-white py-4 rounded-lg font-bold text-lg hover:bg-gray-800 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 📖 Open Book
               </button>
@@ -342,7 +360,7 @@ function BookDetail() {
                 onClick={toggleFavorite}
                 className={`px-6 py-4 rounded-lg font-bold text-lg transition shadow-lg ${
                   isFavorite
-                    ? 'bg-red-500 text-white hover:bg-red-600'
+                    ? 'bg-black text-white hover:bg-gray-800'
                     : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                 }`}
               >
@@ -352,7 +370,7 @@ function BookDetail() {
                 onClick={toggleBookmark}
                 className={`px-6 py-4 rounded-lg font-bold text-lg transition shadow-lg ${
                   isBookmarked
-                    ? 'bg-blue-500 text-white hover:bg-blue-600'
+                    ? 'bg-gray-800 text-white hover:bg-black'
                     : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                 }`}
               >
@@ -361,7 +379,7 @@ function BookDetail() {
             </div>
             
             <p className="text-sm text-gray-600 text-center">
-              💡 Open the archive link to read the book
+              Open the archive link to read the book
             </p>
           </div>
         </div>
@@ -395,44 +413,116 @@ function BookDetail() {
             <p className="text-gray-600">Loading reviews...</p>
           ) : reviews.length > 0 ? (
             <div className="space-y-6">
-              {reviews.map((review) => (
-                <div key={review.review_id} className="border-b pb-6 last:border-b-0">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                        <span className="font-bold text-gray-700">{review.first_name?.charAt(0)}</span>
+              {reviews.map((review) => {
+                const firstName = review.firstname || review.first_name || "";
+                const lastName = review.lastname || review.last_name || "";
+                const displayName = `${firstName} ${lastName}`.trim() || "Reader";
+                const initial = displayName.charAt(0);
+
+                return (
+                  <div key={review.review_id} className="border-b pb-6 last:border-b-0">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+                          <span className="font-bold text-gray-700">{initial}</span>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-800">{displayName}</p>
+                          <p className="text-sm text-gray-500">
+                            {new Date(review.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-semibold text-gray-800">{review.first_name}</p>
-                        <p className="text-sm text-gray-500">
-                          {new Date(review.created_at).toLocaleDateString()}
-                        </p>
+                      <div className="flex gap-1">
+                        {[...Array(5)].map((_, i) => (
+                          <span
+                            key={i}
+                            className={`text-lg ${
+                              i < review.rating ? 'text-gray-900' : 'text-gray-300'
+                            }`}
+                          >
+                            ★
+                          </span>
+                        ))}
                       </div>
                     </div>
-                    <div className="flex gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <span
-                          key={i}
-                          className={`text-lg ${
-                            i < review.rating ? 'text-yellow-400' : 'text-gray-300'
-                          }`}
-                        >
-                          ★
-                        </span>
-                      ))}
-                    </div>
+                    {review.comment && (
+                      <p className="text-gray-700 mt-3">{review.comment}</p>
+                    )}
                   </div>
-                  {review.comment && (
-                    <p className="text-gray-700 mt-3">{review.comment}</p>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <p className="text-gray-600">No reviews yet. Be the first to review this book!</p>
           )}
         </div>
       </main>
+
+      {showProfile && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowProfile(false)} />
+          <div className="relative bg-white rounded-lg shadow-xl w-11/12 max-w-md p-6 z-10">
+            <h3 className="text-xl font-bold mb-4">Your Profile</h3>
+            <div className="flex gap-4 items-center mb-4">
+              <div className="h-20 w-20 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center">
+                {user && user.profilePic ? (
+                  <img src={user.profilePic} alt="profile" className="h-full w-full object-cover" />
+                ) : (
+                  <Avatar
+                    name={
+                      user && user.fullname && (user.fullname.firstname || user.fullname.lastname)
+                        ? `${user.fullname.firstname || ''} ${user.fullname.lastname || ''}`.trim()
+                        : "User"
+                    }
+                    size="80"
+                    round
+                  />
+                )}
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold">{user?.fullname?.firstname} {user?.fullname?.lastname}</p>
+                <p className="text-sm text-gray-600">{user?.email || "No email set"}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-sm mb-4">
+              <div className="p-3 bg-gray-50 rounded">
+                <div className="text-xs text-gray-500">Read Books</div>
+                <div className="font-semibold">{(user?.readBooks && user.readBooks.length) || 0}</div>
+              </div>
+              <div className="p-3 bg-gray-50 rounded">
+                <div className="text-xs text-gray-500">Time Spent</div>
+                <div className="font-semibold">{formatTime(user?.timeSpentMinutes)}</div>
+              </div>
+              <div className="col-span-2 p-3 bg-gray-50 rounded">
+                <div className="text-xs text-gray-500">Account Created</div>
+                <div className="font-semibold">{user?.createdAt ? new Date(user.createdAt).toLocaleString() : "-"}</div>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm text-gray-700 mb-2">Profile Photo</label>
+              <input type="file" accept="image/*" onChange={handlePhotoUpload} className="text-sm" />
+            </div>
+
+            <div className="flex justify-between gap-2">
+              <button
+                onClick={() => {
+                  localStorage.removeItem("token");
+                  localStorage.removeItem("pathsala_user");
+                  navigate("/");
+                }}
+                className="px-4 py-2 rounded bg-black text-white font-semibold hover:bg-gray-800 transition"
+              >
+                Logout
+              </button>
+              <button onClick={() => setShowProfile(false)} className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 transition">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+      <SiteFooter />
     </div>
   );
 }

@@ -4,7 +4,8 @@ import { useState, useContext } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { CaptainDataContext } from "../context/CaptainContext";
-import main_logo from "../assets/main_logo.png";
+import SiteHeader from "../components/SiteHeader";
+import SiteFooter from "../components/SiteFooter";
 function CaptainLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,13 +32,9 @@ function CaptainLogin() {
     setPassword("");
   };
   return (
-    <div className="p-7 h-screen flex flex-col justify-between">
-      <div>
-        <img
-          className="w-16 mb-10"
-          src={main_logo}
-          alt=""
-        />
+    <div className="min-h-screen bg-white text-gray-900 flex flex-col">
+      <SiteHeader />
+      <main className="flex-1 container mx-auto px-4 py-12 max-w-lg">
         <form
           onSubmit={(e) => {
             submitHandler(e);
@@ -52,7 +49,7 @@ function CaptainLogin() {
             type="email"
             required
             placeholder="example@email.com"
-            className="bg-[#eeeeee] mb-7 rounded px-4 py-2 border w-full text-lg placeholder:text-base"
+            className="bg-gray-100 mb-7 rounded px-4 py-2 border w-full text-lg placeholder:text-base"
           />
           <h3 className="text-lg font-medium mb-2">Enter Password</h3>
           <input
@@ -60,7 +57,7 @@ function CaptainLogin() {
             onChange={(e) => {
               setPassword(e.target.value);
             }}
-            className="bg-[#eeeeee] mb-7 rounded px-4 py-2 border w-full text-lg placeholder:text-base"
+            className="bg-gray-100 mb-7 rounded px-4 py-2 border w-full text-lg placeholder:text-base"
             required
             type="password"
             placeholder="password"
@@ -69,21 +66,22 @@ function CaptainLogin() {
             Login
           </button>
         </form>
-        <p className="text-center">
+        <p className="text-center mt-4">
           Join wisdom class?
-          <Link to="/librarian-signup" className="text-blue-600">
+          <Link to="/librarian-signup" className="text-gray-700 hover:text-black">
             Register as a Librarian
           </Link>
         </p>
-      </div>
-      <div>
-        <Link
-          to="/reader-login"
-          className="bg-[#d5622d] flex items-center justify-center mb-5 text-white font-semibold mb-7 rounded px-4 py-2 w-full text-lg placeholder:"
-        >
-          Sign in as Reader
-        </Link>
-      </div>
+        <div className="mt-8">
+          <Link
+            to="/reader-login"
+            className="bg-black flex items-center justify-center text-white font-semibold rounded px-4 py-2 w-full text-lg"
+          >
+            Sign in as Reader
+          </Link>
+        </div>
+      </main>
+      <SiteFooter />
     </div>
   );
 }

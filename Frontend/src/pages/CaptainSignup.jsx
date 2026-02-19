@@ -3,6 +3,8 @@ import { useContext, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { CaptainDataContext } from "../context/CaptainContext";
+import SiteHeader from "../components/SiteHeader";
+import SiteFooter from "../components/SiteFooter";
 
 function CaptainSignup() {
   const [email, setEmail] = useState("");
@@ -38,13 +40,9 @@ function CaptainSignup() {
     setPassword("");
   };
   return (
-    <div className="py-5 px-5 h-screen flex flex-col justify-between">
-      <div>
-        <img
-          className="w-16 mb-10"
-          src="https://toppng.com/uploads/preview/uber-logo-png-transparent-background-11661767218bpqhia5qmj.png"
-          alt=""
-        />
+    <div className="min-h-screen bg-white text-gray-900 flex flex-col">
+      <SiteHeader />
+      <main className="flex-1 container mx-auto px-4 py-12 max-w-lg">
         <form
           onSubmit={(e) => {
             submitHandler(e);
@@ -58,7 +56,7 @@ function CaptainSignup() {
               type="text"
               required
               placeholder="First name"
-              className="bg-[#eeeeee] w-full rounded px-4 py-2 border text-base placeholder:text-sm"
+              className="bg-gray-100 w-full rounded px-4 py-2 border text-base placeholder:text-sm"
             />
           </div>
           <h3 className="text-base font-medium mb-2">What's your email</h3>
@@ -70,7 +68,7 @@ function CaptainSignup() {
             type="email"
             required
             placeholder="example@email.com"
-            className="bg-[#eeeeee] mb-5 rounded px-4 py-2 border w-full text-base placeholder:text-sm"
+            className="bg-gray-100 mb-5 rounded px-4 py-2 border w-full text-base placeholder:text-sm"
           />
           <h3 className="text-base font-medium mb-2">Enter Password</h3>
           <input
@@ -78,7 +76,7 @@ function CaptainSignup() {
             onChange={(e) => {
               setPassword(e.target.value);
             }}
-            className="bg-[#eeeeee] mb-5 rounded px-4 py-2 border w-full text-base placeholder:text-sm"
+            className="bg-gray-100 mb-5 rounded px-4 py-2 border w-full text-base placeholder:text-sm"
             required
             type="password"
             placeholder="password"
@@ -87,23 +85,18 @@ function CaptainSignup() {
             Create Captain Account
           </button>
         </form>
-        <p className="text-center">
+        <p className="text-center mt-4">
           Already have an account?
-          <Link to="/librarian-login" className="text-blue-600">
+          <Link to="/librarian-login" className="text-gray-700 hover:text-black">
             Login
           </Link>
         </p>
-      </div>
-      <div>
-        <p
-          className="
-        text-[10px] "
-        >
-          This site is protected by reCAPTCHA and the
-          <span className="">Google Privacy Policy</span> and
-          <span className="">Terms of Service apply.</span>
+        <p className="text-[10px] mt-8 text-gray-600">
+          This site is protected by reCAPTCHA and the Google Privacy Policy and
+          Terms of Service apply.
         </p>
-      </div>
+      </main>
+      <SiteFooter />
     </div>
   );
 }

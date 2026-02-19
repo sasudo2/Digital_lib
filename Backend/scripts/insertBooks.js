@@ -1,9 +1,12 @@
 const fs = require('fs');
 const path = require('path');
-const { pool } = require('../db/db');
+const { pool, connectToDB } = require('../db/db');
 
 async function insertBooksFromJSON() {
   try {
+    // Create tables first
+    await connectToDB();
+    
     const filePath = path.join(__dirname, '../../', 'Dataset', 'books_dataset.json');
     const data = fs.readFileSync(filePath, 'utf-8');
     const books = JSON.parse(data);

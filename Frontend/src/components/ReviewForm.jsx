@@ -16,11 +16,16 @@ export default function ReviewForm({ bookId, onReviewSubmitted }) {
 
   const fetchExistingReview = async () => {
     try {
+      const token = localStorage.getItem('userToken') || localStorage.getItem('token');
+      if (!token) {
+        setExistingReview(null);
+        return;
+      }
       const response = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL}/reviews/book/${bookId}/my-review`,
+        `${import.meta.env.VITE_BASE_URL}/reviews/book/${bookId}/my-review`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('userToken')}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -41,6 +46,12 @@ export default function ReviewForm({ bookId, onReviewSubmitted }) {
       return;
     }
 
+    const token = localStorage.getItem('userToken') || localStorage.getItem('token');
+    if (!token) {
+      setError('Login to submit a review');
+      return;
+    }
+
     setLoading(true);
     setError('');
     setSuccess('');
@@ -50,11 +61,11 @@ export default function ReviewForm({ bookId, onReviewSubmitted }) {
       if (existingReview) {
         // Update existing review
         response = await axios.put(
-          `${import.meta.env.VITE_API_BASE_URL}/reviews/${existingReview.review_id}`,
+          `${import.meta.env.VITE_BASE_URL}/reviews/${existingReview.review_id}`,
           { rating, comment },
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('userToken')}`,
+              Authorization: `Bearer ${token}`,
             },
           }
         );
@@ -62,11 +73,11 @@ export default function ReviewForm({ bookId, onReviewSubmitted }) {
       } else {
         // Create new review
         response = await axios.post(
-          `${import.meta.env.VITE_API_BASE_URL}/reviews/create`,
+          `${import.meta.env.VITE_BASE_URL}/reviews/create`,
           { bookId, rating, comment },
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('userToken')}`,
+              Authorization: `Bearer ${token}`,
             },
           }
         );
@@ -90,11 +101,17 @@ export default function ReviewForm({ bookId, onReviewSubmitted }) {
 
     setLoading(true);
     try {
+      const token = localStorage.getItem('userToken') || localStorage.getItem('token');
+      if (!token) {
+        setError('Login to delete a review');
+        setLoading(false);
+        return;
+      }
       await axios.delete(
-        `${import.meta.env.VITE_API_BASE_URL}/reviews/${existingReview.review_id}`,
+        `${import.meta.env.VITE_BASE_URL}/reviews/${existingReview.review_id}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('userToken')}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );

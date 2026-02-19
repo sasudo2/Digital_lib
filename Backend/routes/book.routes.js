@@ -25,6 +25,12 @@ router.get('/all', bookController.getAllBooks);
 // Get search suggestions (autocomplete)
 router.get('/search/suggestions', bookController.searchSuggestions);
 
+// Get random books
+router.get('/random', bookController.getRandomBooks);
+
+// Prefix search by title/author
+router.get('/search/prefix', bookController.searchByPrefix);
+
 // Get popular books (top rated)
 router.get('/popular', bookController.getPopularBooks);
 
