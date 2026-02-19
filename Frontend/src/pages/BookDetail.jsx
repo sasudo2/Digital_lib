@@ -163,14 +163,17 @@ function BookDetail() {
   };
 
   const handlePdfClick = () => {
-    // Open the archive URL (Book from Internet Archive)
-    if (!book.archive_url) {
-      setAlert("Archive URL not available for this book");
+    // Open the archive URL first, fallback to book URL if not available
+    const urlToOpen = book.archive_url || book.book_url;
+    
+    if (!urlToOpen) {
+      setAlert("Archive URL and Book URL are not available for this book");
       return;
     }
+    
     setPdfStartTime(Date.now());
     setIsReadingPdf(true);
-    window.open(book.archive_url, "_blank");
+    window.open(urlToOpen, "_blank");
   };
 
   const handleReturnFromPdf = async () => {
@@ -330,7 +333,7 @@ function BookDetail() {
             <div className="flex gap-4 mb-6">
               <button
                 onClick={handlePdfClick}
-                disabled={!book.archive_url}
+                disabled={!book.archive_url && !book.book_url}
                 className="flex-1 bg-gradient-to-r from-pink-500 to-orange-500 text-white py-4 rounded-lg font-bold text-lg hover:from-pink-600 hover:to-orange-600 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 📖 Open Book

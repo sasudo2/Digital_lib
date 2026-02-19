@@ -45,16 +45,13 @@ export default function SearchSuggestions() {
   };
 
   const handleSuggestionClick = (book) => {
-    // Redirect to archive URL if available
-    if (book.archive_url) {
-      window.open(book.archive_url, '_blank');
-    }
+    // Navigate to book detail page
+    navigate(`/book/${book.book_id}`, { state: { book } });
+    
+    // Clear search state
     setSearchTerm('');
     setSuggestions([]);
     setShowSuggestions(false);
-    
-    // Also navigate to book detail page
-    navigate(`/book/${book.book_id}`, { state: { book } });
   };
 
   return (
