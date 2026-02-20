@@ -38,7 +38,6 @@ function BrowseBooks() {
     reader.readAsDataURL(file);
   };
 
-  // Fetch random books on component mount
   useEffect(() => {
     fetchRandomBooks();
     loadFavorites();
@@ -56,24 +55,15 @@ function BrowseBooks() {
 
   useEffect(() => {
     const favoriteIds = new Set(favoriteBooks.map((b) => b.book_id));
-    if (favoriteBooks.length === 0) {
-      applyFilters(searchQuery, selectedGenre, sortBy, books, showFavoritesOnly, favoriteIds);
-      return;
-    }
-    setBooks((prev) => {
-      const merged = mergeBooks(prev, favoriteBooks);
-      applyFilters(searchQuery, selectedGenre, sortBy, merged, showFavoritesOnly, favoriteIds);
-      return merged;
-    });
+    const merged = mergeBooks(books, favoriteBooks);
+    setBooks(merged);
+    applyFilters(searchQuery, selectedGenre, sortBy, merged, showFavoritesOnly, favoriteIds);
   }, [favoriteBooks]);
 
   const fetchRandomBooks = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/books/random`, 
-        { params: { limit: 50 } }
-      );
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/books/random`, { params: { limit: 50 } });
       if (response.data.success) {
         setBooks(response.data.books);
         applyFilters(searchQuery, selectedGenre, sortBy, response.data.books, showFavoritesOnly);
@@ -88,10 +78,9 @@ function BrowseBooks() {
   const fetchPrefixSearch = async (query) => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/books/search/prefix`,
-        { params: { query, limit: 50, page: 1 } }
-      );
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/books/search/prefix`, {
+        params: { query, limit: 50, page: 1 },
+      });
       if (response.data.success) {
         setBooks(response.data.books);
         applyFilters(query, selectedGenre, sortBy, response.data.books, showFavoritesOnly);
@@ -105,70 +94,36 @@ function BrowseBooks() {
 
   const loadFavorites = async () => {
     try {
-      const token = localStorage.getItem('userToken') || localStorage.getItem('token');
-      if (!token) {
-        setFavorites(new Set());
-        setFavoriteBooks([]);
-        return;
-      }
-      const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/favorites/list`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const token = localStorage.getItem("userToken") || localStorage.getItem("token");
+      if (!token) return;
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/favorites/list`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const favoriteList = response.data.favorites || [];
-      const favoriteIds = new Set(favoriteList.map(b => b.book_id));
+      const favoriteIds = new Set(favoriteList.map((b) => b.book_id));
       setFavorites(favoriteIds);
       setFavoriteBooks(favoriteList);
-
-      // Merge favorites into the book list so they always appear
-      setBooks((prev) => {
-        const merged = mergeBooks(prev, favoriteList);
-        applyFilters(searchQuery, selectedGenre, sortBy, merged, showFavoritesOnly, favoriteIds);
-        return merged;
-      });
     } catch (error) {
-      console.error('Error loading favorites:', error);
+      console.error("Error loading favorites:", error);
     }
   };
 
   const toggleFavorite = async (e, bookId) => {
     e.stopPropagation();
     try {
-      const token = localStorage.getItem('userToken') || localStorage.getItem('token');
+      const token = localStorage.getItem("userToken") || localStorage.getItem("token");
       if (!token) {
-        setAlert('Login to manage favorites');
+        setAlert("Login to manage favorites");
         return;
       }
       if (favorites.has(bookId)) {
-        // Remove favorite
-        await axios.post(
-          `${import.meta.env.VITE_BASE_URL}/favorites/remove`,
-          { bookId },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        await axios.post(`${import.meta.env.VITE_BASE_URL}/favorites/remove`, { bookId }, { headers: { Authorization: `Bearer ${token}` } });
         const nextFavorites = new Set([...favorites].filter((id) => id !== bookId));
         setFavorites(nextFavorites);
         setFavoriteBooks((prev) => prev.filter((b) => b.book_id !== bookId));
         applyFilters(searchQuery, selectedGenre, sortBy, books, showFavoritesOnly, nextFavorites);
       } else {
-        // Add favorite
-        await axios.post(
-          `${import.meta.env.VITE_BASE_URL}/favorites/add`,
-          { bookId },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        await axios.post(`${import.meta.env.VITE_BASE_URL}/favorites/add`, { bookId }, { headers: { Authorization: `Bearer ${token}` } });
         const nextFavorites = new Set([...favorites, bookId]);
         setFavorites(nextFavorites);
         setFavoriteBooks((prev) => {
@@ -180,20 +135,16 @@ function BrowseBooks() {
         applyFilters(searchQuery, selectedGenre, sortBy, books, showFavoritesOnly, nextFavorites);
       }
     } catch (error) {
-      console.error('Error toggling favorite:', error);
-      setAlert('Failed to update favorite');
+      console.error("Error toggling favorite:", error);
+      setAlert("Failed to update favorite");
     }
   };
 
-  // Dynamic search filtering
   const handleSearch = (e) => {
     const query = e.target.value.toLowerCase();
     setSearchQuery(query);
-    if (query.trim() === "") {
-      fetchRandomBooks();
-      return;
-    }
-    fetchPrefixSearch(query);
+    if (!query.trim()) fetchRandomBooks();
+    else fetchPrefixSearch(query);
   };
 
   const handleGenreChange = (genreId) => {
@@ -206,69 +157,44 @@ function BrowseBooks() {
     applyFilters(searchQuery, selectedGenre, sortValue);
   };
 
-  const applyFilters = (
-    query,
-    genreId,
-    sort,
-    baseList = books,
-    favoritesOnly = showFavoritesOnly,
-    favoritesSet = favorites
-  ) => {
+  // Updated applyFilters for search + genre
+  const applyFilters = (query, genreId, sort, baseList = books, favoritesOnly = showFavoritesOnly, favoritesSet = favorites) => {
     let filtered = [...baseList];
 
-    if (favoritesOnly) {
-      filtered = filtered.filter((book) => favoritesSet.has(book.book_id));
-    }
+    if (favoritesOnly) filtered = filtered.filter((book) => favoritesSet.has(book.book_id));
 
-    // Filter by search query
-    if (query.trim() !== "") {
+    if (query.trim()) {
       filtered = filtered.filter((book) => {
         const title = book.title?.toLowerCase() || "";
         const author = book.author_name?.toLowerCase() || "";
         const genre = book.genre_name?.toLowerCase() || "";
-
         return (
-          title.includes(query) || 
-          author.includes(query) || 
+          title.includes(query) ||
+          author.includes(query) ||
           genre.includes(query) ||
-          query.split(" ").some(word => 
-            title.includes(word) || 
-            author.includes(word)
-          )
+          query.split(" ").some((word) => title.includes(word) || author.includes(word) || genre.includes(word))
         );
       });
     }
 
-    // Filter by genre
-    if (genreId) {
-      filtered = filtered.filter((book) => book.genre_id === parseInt(genreId));
-    }
+    if (genreId) filtered = filtered.filter((book) => book.genre_id === parseInt(genreId));
 
-    // Sort
-    if (sort === "rating") {
-      filtered.sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0));
-    } else if (sort === "title") {
-      filtered.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
-    }
+    if (sort === "rating") filtered.sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0));
+    else if (sort === "title") filtered.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
 
     setFilteredBooks(filtered);
   };
 
-  const handleBookClick = (book) => {
-    // Navigate to book detail page with book data
-    navigate(`/book/${book.book_id}`, { state: { book } });
-  };
+  const handleBookClick = (book) => navigate(`/book/${book.book_id}`, { state: { book } });
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
       <SiteHeader showProfileButton onProfileClick={() => setShowProfile(true)} />
 
       <main className="container mx-auto px-4 py-12">
-        {/* Search and Filter Section */}
         <div className="mb-12">
           <h2 className="text-4xl font-bold text-gray-800 mb-6">Browse Books</h2>
-          
-          {/* Search Bar */}
+
           <div className="flex gap-2 mb-6">
             <input
               type="text"
@@ -277,22 +203,14 @@ function BrowseBooks() {
               onChange={handleSearch}
               className="flex-1 px-6 py-4 rounded-lg border-2 border-gray-300 focus:border-black focus:outline-none text-lg"
             />
-            <button className="bg-black text-white px-8 py-4 rounded-lg font-semibold hover:bg-gray-800 transition shadow-lg">
-              Search
-            </button>
+            <button className="bg-black text-white px-8 py-4 rounded-lg font-semibold hover:bg-gray-800 transition shadow-lg">Search</button>
           </div>
 
-          {/* Filters */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <GenreFilter 
-              selectedGenre={selectedGenre}
-              onGenreChange={handleGenreChange}
-            />
-            
+            <GenreFilter selectedGenre={selectedGenre} onGenreChange={handleGenreChange} />
+
             <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
-                Sort By
-              </label>
+              <label className="block text-sm font-semibold text-gray-800 mb-2">Sort By</label>
               <select
                 value={sortBy}
                 onChange={(e) => handleSortChange(e.target.value)}
@@ -305,9 +223,7 @@ function BrowseBooks() {
             </div>
 
             <div className="flex flex-col">
-              <label className="block text-sm font-semibold text-gray-800 mb-2 opacity-0 select-none">
-                Favorites
-              </label>
+              <label className="block text-sm font-semibold text-gray-800 mb-2 opacity-0 select-none">Favorites</label>
               <button
                 onClick={() => {
                   setShowFavoritesOnly((prev) => {
@@ -316,9 +232,11 @@ function BrowseBooks() {
                     return next;
                   });
                 }}
-                className={`w-full px-4 py-2 rounded-lg border font-semibold transition ${showFavoritesOnly ? 'bg-black text-white border-black' : 'bg-white text-gray-800 border-gray-400 hover:bg-gray-100'}`}
+                className={`w-full px-4 py-2 rounded-lg border font-semibold transition ${
+                  showFavoritesOnly ? "bg-black text-white border-black" : "bg-white text-gray-800 border-gray-400 hover:bg-gray-100"
+                }`}
               >
-                {showFavoritesOnly ? 'Showing Favorites' : 'Show Favorites'}
+                {showFavoritesOnly ? "Showing Favorites" : "Show Favorites"}
               </button>
             </div>
           </div>
@@ -330,14 +248,8 @@ function BrowseBooks() {
           )}
         </div>
 
-        {/* Alert Message */}
-        {alert && (
-          <div className="bg-black text-white p-3 rounded mb-6 text-center">
-            {alert}
-          </div>
-        )}
+        {alert && <div className="bg-black text-white p-3 rounded mb-6 text-center">{alert}</div>}
 
-        {/* Books Grid */}
         {loading ? (
           <div className="text-center py-12">
             <p className="text-xl text-gray-600">Loading books...</p>
@@ -354,9 +266,7 @@ function BrowseBooks() {
                   onClick={(e) => toggleFavorite(e, book.book_id)}
                   className="absolute top-2 right-2 z-10 text-2xl transition"
                 >
-                  <span className={favorites.has(book.book_id) ? 'text-gray-900' : 'text-gray-400'}>
-                    ♥
-                  </span>
+                  <span className={favorites.has(book.book_id) ? "text-gray-900" : "text-gray-400"}>♥</span>
                 </button>
                 <div className="h-64 bg-gradient-to-br from-gray-900 via-gray-700 to-gray-600 flex items-center justify-center">
                   <div className="text-center p-4">
@@ -372,9 +282,7 @@ function BrowseBooks() {
                       ★ {book.average_rating.toFixed(1)} ({book.review_count || 0} reviews)
                     </p>
                   )}
-                  <button className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition text-sm font-semibold">
-                    View Details
-                  </button>
+                  <button className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition text-sm font-semibold">View Details</button>
                 </div>
               </div>
             ))}
@@ -408,17 +316,17 @@ function BrowseBooks() {
             <h3 className="text-xl font-bold mb-4">Your Profile</h3>
             <div className="flex gap-4 items-center mb-4">
               <div className="h-20 w-20 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center">
-                {user && user.profilePic ? (
+                {user?.profilePic ? (
                   <img src={user.profilePic} alt="profile" className="h-full w-full object-cover" />
                 ) : (
-                  <Avatar 
+                  <Avatar
                     name={
-                      user && user.fullname && (user.fullname.firstname || user.fullname.lastname)
-                        ? `${user.fullname.firstname || ''} ${user.fullname.lastname || ''}`.trim()
+                      user?.fullname?.firstname || user?.fullname?.lastname
+                        ? `${user.fullname.firstname || ""} ${user.fullname.lastname || ""}`.trim()
                         : "User"
-                    } 
-                    size="80" 
-                    round 
+                    }
+                    size="80"
+                    round
                   />
                 )}
               </div>
@@ -431,7 +339,7 @@ function BrowseBooks() {
             <div className="grid grid-cols-2 gap-3 text-sm mb-4">
               <div className="p-3 bg-gray-50 rounded">
                 <div className="text-xs text-gray-500">Read Books</div>
-                <div className="font-semibold">{(user?.readBooks && user.readBooks.length) || 0}</div>
+                <div className="font-semibold">{user?.readBooks?.length || 0}</div>
               </div>
               <div className="p-3 bg-gray-50 rounded">
                 <div className="text-xs text-gray-500">Time Spent</div>
@@ -449,7 +357,7 @@ function BrowseBooks() {
             </div>
 
             <div className="flex justify-between gap-2">
-              <button 
+              <button
                 onClick={() => {
                   localStorage.removeItem("token");
                   localStorage.removeItem("pathsala_user");
@@ -459,11 +367,14 @@ function BrowseBooks() {
               >
                 Logout
               </button>
-              <button onClick={() => setShowProfile(false)} className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 transition">Close</button>
+              <button onClick={() => setShowProfile(false)} className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 transition">
+                Close
+              </button>
             </div>
           </div>
         </div>
       )}
+
       <SiteFooter />
     </div>
   );
