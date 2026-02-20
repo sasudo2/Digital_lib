@@ -1,4 +1,4 @@
-# Uber Backend API
+# Pathshala Backend API
 
 ## Endpoints
 
@@ -189,7 +189,7 @@ Authorization: Bearer <jwt_token>
 
 **POST** `/captains/register`
 
-Registers a new captain (driver) with vehicle details.
+Registers a new captain (librarian) with account details.
 
 #### Request Body
 
@@ -200,13 +200,7 @@ Registers a new captain (driver) with vehicle details.
     "lastname": "Shrestha"
   },
   "email": "deep.shrestha@example.com",
-  "password": "yourpassword",
-  "vehicle": {
-    "color": "Red",
-    "plate": "ABC123",
-    "capacity": 4,
-    "vehicleType": "car"
-  }
+  "password": "yourpassword"
 }
 ```
 
@@ -216,10 +210,6 @@ Registers a new captain (driver) with vehicle details.
 - `fullname.lastname`: optional, minimum 3 characters if provided
 - `email`: required, must be a valid email
 - `password`: required, minimum 6 characters
-- `vehicle.color`: required, minimum 3 characters
-- `vehicle.plate`: required, minimum 3 characters
-- `vehicle.capacity`: required, integer, minimum 1
-- `vehicle.vehicleType`: required, must be one of `"car"`, `"motorcycle"`, `"auto"`
 
 #### Responses
 
@@ -228,23 +218,12 @@ Registers a new captain (driver) with vehicle details.
   {
     "token": "<jwt_token>",
     "captain": {
-      "_id": "captain_id",
-      "fullname": {
-        "firstname": "Deep",
-        "lastname": "Shrestha"
-      },
+      "id": "captain_id",
+      "firstname": "Deep",
+      "lastname": "Shrestha",
       "email": "deep.shrestha@example.com",
-      "status": "inactive",
-      "vehicle": {
-        "color": "Red",
-        "plate": "ABC123",
-        "capacity": 4,
-        "vehicleType": "car"
-      },
-      "location": {
-        "lat": null,
-        "lon": null
-      }
+      "status": "active",
+      "created_at": "2024-01-01T00:00:00.000Z"
     }
   }
   ```

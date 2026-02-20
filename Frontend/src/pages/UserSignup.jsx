@@ -120,7 +120,7 @@ function UserSignup() {
         </p>
         <p className="text-[10px] mt-8 text-gray-600">
           By proceeding, you consent to get calls, WhatsApp or SMS messages,
-          including by automated means, from Uber and its affiliates to the
+          including by automated means, from Pathshala and its affiliates to the
           number provide.
         </p>
       </main>

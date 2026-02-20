@@ -9,7 +9,7 @@ module.exports.registerCaptain = async (req, res, next) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { fullname, email, password, vehicle } = req.body;
+  const { fullname, email, password } = req.body;
 
   try {
     const isAlreadyCaptain = await Captain.findByEmail(email);
@@ -24,10 +24,6 @@ module.exports.registerCaptain = async (req, res, next) => {
       lastname: fullname.lastname,
       email,
       password: hashedPassword,
-      vehicleColor: vehicle.color,
-      vehiclePlate: vehicle.plate,
-      vehicleCapacity: vehicle.capacity,
-      vehicleType: vehicle.vehicleType,
     });
 
     const token = Captain.generateAuthToken(captain.id);

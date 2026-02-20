@@ -5,23 +5,15 @@ module.exports.createCaptain = async ({
   lastname,
   email,
   password,
-  vehicleColor,
-  vehiclePlate,
-  vehicleCapacity,
-  vehicleType,
 }) => {
-  if (!firstname || !email || !password || !vehicleColor || !vehiclePlate || !vehicleCapacity || !vehicleType) {
-    throw new Error('All fields are required');
+  if (!firstname || !email || !password) {
+    throw new Error('All required fields must be provided');
   }
   const captain = await Captain.create({
     firstname,
     lastname,
     email,
     password,
-    vehicleColor,
-    vehiclePlate,
-    vehicleCapacity,
-    vehicleType,
   });
   return captain;
 };

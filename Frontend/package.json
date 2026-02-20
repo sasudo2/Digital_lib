@@ -1,7 +1,8 @@
 {
-  "name": "frontend",
+  "name": "pathshala-frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Frontend application for Pathshala - Digital Library System",
   "type": "module",
   "scripts": {
     "dev": "vite",

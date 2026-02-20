@@ -26,7 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.get("/", (req, res) => {
-  res.send("Message from Uber team!");
+  res.send("Welcome to Pathshala - Digital Library System!");
 });
 app.use("/users", userRoutes);
 app.use("/captains", captainRoutes);
