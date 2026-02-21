@@ -56,7 +56,7 @@ function BookDetail() {
     try {
       setLoading(true);
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/books/${bookId}`
+        `${import.meta.env.VITE_API_BASE_URL}/books/${bookId}`
       );
       if (response.data.success) {
         setBook(response.data.book);
@@ -78,7 +78,7 @@ function BookDetail() {
         return;
       }
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/favorites/check/${bookId}`,
+        `${import.meta.env.VITE_API_BASE_URL}/favorites/check/${bookId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -95,7 +95,7 @@ function BookDetail() {
     try {
       setLoadingReviews(true);
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/reviews/book/${bookId}`,
+        `${import.meta.env.VITE_API_BASE_URL}/reviews/book/${bookId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('userToken') || localStorage.getItem('token')}`,
@@ -119,7 +119,7 @@ function BookDetail() {
       }
       if (isFavorite) {
         await axios.post(
-          `${import.meta.env.VITE_BASE_URL}/favorites/remove`,
+          `${import.meta.env.VITE_API_BASE_URL}/favorites/remove`,
           { bookId: book.book_id },
           {
             headers: {
@@ -129,7 +129,7 @@ function BookDetail() {
         );
       } else {
         await axios.post(
-          `${import.meta.env.VITE_BASE_URL}/favorites/add`,
+          `${import.meta.env.VITE_API_BASE_URL}/favorites/add`,
           { bookId: book.book_id },
           {
             headers: {
@@ -153,7 +153,7 @@ function BookDetail() {
         return;
       }
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/bookmarks/check/${bookId}`,
+        `${import.meta.env.VITE_API_BASE_URL}/bookmarks/check/${bookId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -175,7 +175,7 @@ function BookDetail() {
       }
       if (isBookmarked) {
         await axios.post(
-          `${import.meta.env.VITE_BASE_URL}/bookmarks/remove`,
+          `${import.meta.env.VITE_API_BASE_URL}/bookmarks/remove`,
           { bookId: book.book_id },
           {
             headers: {
@@ -185,7 +185,7 @@ function BookDetail() {
         );
       } else {
         await axios.post(
-          `${import.meta.env.VITE_BASE_URL}/bookmarks/add`,
+          `${import.meta.env.VITE_API_BASE_URL}/bookmarks/add`,
           { bookId: book.book_id },
           {
             headers: {
@@ -224,7 +224,7 @@ function BookDetail() {
       if (timeSpentMinutes > 0) {
         // Record reading time
         const response = await axios.post(
-          `${import.meta.env.VITE_BASE_URL}/reading/update-time`,
+          `${import.meta.env.VITE_API_BASE_URL}/reading/update-time`,
           {
             bookId: book.book_id,
             timeSpentMinutes,

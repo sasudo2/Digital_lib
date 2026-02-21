@@ -49,7 +49,7 @@ function Home() {
     try {
       setLoadingSearch(true);
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/books/search/prefix`,
+        `${import.meta.env.VITE_API_BASE_URL}/books/search/prefix`,
         { params: { query, limit: 50, page: 1 } }
       );
       if (response.data.success) {
@@ -76,7 +76,7 @@ function Home() {
     try {
       setLoadingPopular(true);
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/books/popular`,
+        `${import.meta.env.VITE_API_BASE_URL}/books/popular`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('userToken') || localStorage.getItem('token')}`,

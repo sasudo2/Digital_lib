@@ -24,7 +24,7 @@ function CaptainSignup() {
       password: password,
     };
     const response = await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/captains/register`,
+      `${import.meta.env.VITE_API_BASE_URL}/captains/register`,
       captainData
     );
 

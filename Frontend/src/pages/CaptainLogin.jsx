@@ -18,7 +18,7 @@ function CaptainLogin() {
     e.preventDefault();
     const captainData = { email: email, password: password };
     const response = await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/captains/login`,
+      `${import.meta.env.VITE_API_BASE_URL}/captains/login`,
       captainData
     );
     if (response.status === 200) {

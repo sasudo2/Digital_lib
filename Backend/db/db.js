@@ -10,12 +10,14 @@ require("dotenv").config({ path: path.join(__dirname, '../.env') })
 
 // takes the credentials from .env
 const pool = new Pool({
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 5432,
-  database: process.env.DB_NAME || 'digitalLIB',
-  user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || 'YatraData@789',
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  database: process.env.DB_NAME,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
 });
+
+
 
 async function connectToDB(){
   try{

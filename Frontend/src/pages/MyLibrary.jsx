@@ -26,7 +26,7 @@ function MyLibrary() {
       
       // Fetch reading stats
       const statsResponse = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/reading/stats`,
+        `${import.meta.env.VITE_API_BASE_URL}/reading/stats`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }

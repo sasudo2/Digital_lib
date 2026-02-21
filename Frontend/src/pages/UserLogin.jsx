@@ -21,7 +21,7 @@ function UserLogin() {
     const userData = { email: email, password: password };
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/users/login`,
+        `${import.meta.env.VITE_API_BASE_URL}/users/login`,
         userData
       );
 

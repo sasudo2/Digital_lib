@@ -30,7 +30,7 @@ function UserSignup() {
     };
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/users/register`,
+        `${import.meta.env.VITE_API_BASE_URL}/users/register`,
         newUser
       );
       if (response.status === 201) {
