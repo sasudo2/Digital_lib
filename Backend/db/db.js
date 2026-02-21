@@ -3,6 +3,13 @@
  * Pool is used to manage a pool of client connections to a PostgreSQL database,
  * allowing multiple concurrent queries without creating a new connection each time.
  */
+
+/**
+ * This file is like the electirician which makes sure the lights are on and the wires are connected. 
+ * Here we set up the connection to the PostgreSQL database using the Pool class.
+ *  We also define a function to create the necessary tables if they don't already exist. 
+ * This ensures that when we start our application, we have the required database structure in place to store our data.
+*/
 const { Pool } = require('pg');
 const path = require('path');
 

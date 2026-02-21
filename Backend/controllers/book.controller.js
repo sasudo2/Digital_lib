@@ -1,3 +1,9 @@
+/**
+ * this controller file is decision maker and the security guard.
+ * it stays between the user and database and makes sure that the raw requests from user is valid and safe before it reaches the database.
+ 
+ */
+
 const Book = require('../model/book.model');
 const Author = require('../model/author.model');
 const Genre = require('../model/genre.model');
