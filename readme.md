@@ -181,7 +181,7 @@ This will read the `Dataset/books_dataset.json` file and insert all books into y
   ```
 - Create a `.env` file with:
   ```
-  VITE_BASE_URL=http://localhost:4000
+  VITE_API_BASE_URL=http://localhost:4000
   ```
 - Start the development server:
   ```sh
